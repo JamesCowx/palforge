@@ -1,29 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="icon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#f59e0b"/>
-      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="60%" stop-color="#d97706"/>
       <stop offset="100%" stop-color="#b45309"/>
     </linearGradient>
-    <linearGradient id="icon-light" x1="0%" y1="0%" x2="0%" y2="100%">
+    <linearGradient id="gl" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#fcd34d"/>
       <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
-  <!-- Background shield -->
-  <path d="M32 4 L54 14 L54 34 C54 46 42 56 32 60 C22 56 10 46 10 34 L10 14 Z" fill="url(#icon-grad)" opacity="0.15"/>
   <!-- Anvil body -->
-  <path d="M18 42 L18 36 L22 36 L22 30 L42 30 L42 36 L46 36 L46 42 L44 42 L44 48 L20 48 L20 42 Z" fill="url(#icon-grad)"/>
-  <!-- Anvil top (striking surface) -->
-  <rect x="16" y="26" width="32" height="6" rx="1.5" fill="url(#icon-light)"/>
-  <!-- Anvil horn (point) -->
-  <path d="M16 28 L12 24 L14 22 L18 26 Z" fill="url(#icon-grad)"/>
+  <path d="M14 44 L14 36 L20 36 L20 28 L44 28 L44 36 L50 36 L50 44 L44 44 L44 52 L20 52 L14 44 Z" fill="url(#g)"/>
+  <!-- Anvil top -->
+  <rect x="10" y="24" width="44" height="6" rx="2.5" fill="url(#gl)"/>
+  <!-- Anvil horn -->
+  <path d="M10 26 L4 18 L8 16 L14 24 Z" fill="url(#g)"/>
+  <!-- Anvil base -->
+  <rect x="18" y="52" width="28" height="4" rx="2" fill="url(#g)" opacity="0.45"/>
   <!-- Hammer head -->
-  <rect x="40" y="14" width="16" height="12" rx="2.5" fill="url(#icon-grad)"/>
+  <rect x="44" y="4" width="16" height="14" rx="3.5" fill="url(#g)"/>
+  <rect x="47" y="7" width="6" height="8" rx="1.5" fill="#fff" opacity="0.12"/>
   <!-- Hammer handle -->
-  <rect x="46" y="26" width="4" height="14" rx="2" fill="url(#icon-grad)" opacity="0.7"/>
+  <rect x="50" y="18" width="4" height="18" rx="2" fill="url(#g)" opacity="0.6"/>
   <!-- Spark -->
-  <circle cx="28" cy="22" r="2.5" fill="#fcd34d" opacity="0.9"/>
-  <circle cx="28" cy="22" r="5" fill="#fbbf24" opacity="0.2"/>
-  <circle cx="36" cy="20" r="1.5" fill="#fbbf24" opacity="0.7"/>
+  <circle cx="30" cy="20" r="2.5" fill="#fcd34d" opacity="0.9"/>
+  <circle cx="30" cy="20" r="6" fill="#fbbf24" opacity="0.15"/>
+  <circle cx="38" cy="16" r="1.5" fill="#fbbf24" opacity="0.5"/>
 </svg>
