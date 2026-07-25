@@ -1,28 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" fill="none">
   <defs>
-    <linearGradient id="pf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#c084fc"/>
+    <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="40%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="logo-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#92400e"/>
     </linearGradient>
   </defs>
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- Anvil shape -->
-    <rect x="8" y="22" width="44" height="24" rx="4" fill="url(#pf-grad)" stroke="none"/>
-    <rect x="16" y="14" width="28" height="10" rx="3" fill="#fff" opacity="0.9"/>
-    <rect x="12" y="30" width="8" height="6" rx="1" fill="#fff" opacity="0.7"/>
-    <rect x="36" y="30" width="8" height="6" rx="1" fill="#fff" opacity="0.7"/>
+
+  <!-- Background shield (subtle) -->
+  <path d="M60 16 L100 6 L100 66 C100 86 72 104 60 110 C48 104 20 86 20 66 L20 6 Z" fill="url(#logo-grad)" opacity="0.08"/>
+
+  <!-- === ICON === -->
+  <g transform="translate(10, 5)">
+    <!-- Anvil body -->
+    <path d="M28 72 L28 62 L34 62 L34 52 L74 52 L74 62 L80 62 L80 72 L76 72 L76 82 L32 82 L28 72 Z" fill="url(#logo-grad)"/>
+    <!-- Anvil striking surface -->
+    <rect x="24" y="44" width="56" height="10" rx="2.5" fill="url(#logo-light)"/>
+    <!-- Anvil horn (pointed end) -->
+    <path d="M24 48 L16 40 L20 36 L28 44 Z" fill="url(#logo-grad)"/>
+    <!-- Anvil base plate -->
+    <rect x="30" y="82" width="48" height="6" rx="2" fill="url(#logo-grad)" opacity="0.6"/>
     <!-- Hammer head -->
-    <rect x="60" y="10" width="30" height="20" rx="4" fill="url(#pf-grad)" stroke="none"/>
-    <rect x="64" y="14" width="8" height="12" rx="2" fill="#fff" opacity="0.3"/>
+    <rect x="66" y="18" width="28" height="20" rx="4" fill="url(#logo-grad)"/>
+    <rect x="70" y="22" width="10" height="12" rx="2" fill="#fff" opacity="0.15"/>
     <!-- Hammer handle -->
-    <rect x="74" y="30" width="6" height="20" rx="3" fill="url(#pf-grad)" stroke="none"/>
-    <!-- Spark/star glow -->
-    <circle cx="145" cy="24" r="4" fill="#fbbf24" opacity="0.9"/>
-    <circle cx="145" cy="24" r="8" fill="#fbbf24" opacity="0.2"/>
-    <circle cx="160" cy="36" r="2.5" fill="#c084fc" opacity="0.7"/>
-    <circle cx="160" cy="36" r="6" fill="#c084fc" opacity="0.15"/>
-    <!-- Small sparkle -->
-    <circle cx="130" cy="40" r="1.5" fill="#818cf8" opacity="0.6"/>
+    <rect x="78" y="38" width="6" height="26" rx="3" fill="url(#logo-grad)" opacity="0.7"/>
+    <!-- Sparks -->
+    <circle cx="44" cy="36" r="4" fill="#fcd34d" opacity="0.9"/>
+    <circle cx="44" cy="36" r="9" fill="#fbbf24" opacity="0.15"/>
+    <circle cx="60" cy="32" r="2.5" fill="#fbbf24" opacity="0.7"/>
+    <circle cx="52" cy="42" r="2" fill="#fcd34d" opacity="0.6"/>
+    <circle cx="36" cy="30" r="1.5" fill="#fbbf24" opacity="0.5"/>
   </g>
-  <text x="55" y="48" font-family="Inter, sans-serif" font-size="18" font-weight="800" fill="url(#pf-grad)" letter-spacing="1">PalForge</text>
+
+  <!-- === TEXT === -->
+  <!-- Pal -->
+  <text x="130" y="56" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="42" font-weight="800" letter-spacing="-1" fill="url(#text-grad)">Pal</text>
+  <!-- Forge -->
+  <text x="238" y="56" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="42" font-weight="300" letter-spacing="4" fill="url(#text-grad)">Forge</text>
+
+  <!-- Tagline -->
+  <text x="130" y="84" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="13" font-weight="500" letter-spacing="3" fill="#a16207" opacity="0.7">FORGE YOUR PALWORLD SERVER</text>
+
+  <!-- Decorative line -->
+  <line x1="130" y1="68" x2="480" y2="68" stroke="url(#logo-grad)" stroke-width="1" opacity="0.3"/>
 </svg>

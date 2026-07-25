@@ -39,19 +39,22 @@
 
 ## Overview
 
-**PalForge** transforms the tedious command-line management of PalWorld dedicated servers into a sleek, intuitive web experience. Spin up servers, tweak every setting with toggles and dropdowns, watch real-time console logs stream in your browser, and share connection info with friends in one click — all from a beautifully crafted dark UI.
+**PalForge** transforms the tedious command-line management of PalWorld dedicated servers into a sleek, intuitive web experience. Spin up servers, tweak every setting with toggles and dropdowns, watch real-time console logs stream in your browser, and share connection info with friends in one click — all from a beautifully crafted dark amber UI.
 
-Whether you're hosting for a handful of friends on your home PC or running a 24/7 community server on a cloud VPS, PalForge handles the heavy lifting so you can focus on playing.
+Whether you're hosting for a handful of friends on your home PC or running a 24/7 community server on a cloud VPS, PalForge handles the heavy lifting so you can just play.
+
+<p align="center">
+  <br>
+  <a href="#quick-start"><code>⚡  Get Started  ⚡</code></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/JamesCowx/palforge/issues"><code>🐛  Report Bug</code></a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/JamesCowx/palforge/discussions"><code>💬  Discussion</code></a>
+</p>
 
 ---
 
 ## Features
-
-<p align="center">
-  <img src="static/palforge-icon.svg" alt="PalForge UI Preview" width="600">
-  <br>
-  <em>PalForge web interface — manage everything from your browser.</em>
-</p>
 
 | | Feature | |
 |-|---------|-|
@@ -74,46 +77,43 @@ Whether you're hosting for a handful of friends on your home PC or running a 24/
 
 ### Prerequisites
 
-- **Python 3.10+** or **Docker**
-- **~25 GB free disk space** for PalWorld server files
-- **Windows, Linux, or macOS**
+| Requirement | Details |
+|-------------|---------|
+| **Python** | 3.10+ (or Docker) |
+| **Disk Space** | ~25 GB free for PalWorld server files |
+| **OS** | Windows, Linux, or macOS |
 
-### Option 1 — Direct Install (Recommended)
+### Option 1 — Direct Install <sub><sup>(Recommended)</sup></sub>
 
 ```bash
 git clone https://github.com/JamesCowx/palforge.git
 cd palforge
-
 start.bat       # Windows
 ./start.sh      # Linux/macOS
 ```
-
-Then open **http://localhost:8080**.
+> Your PalForge UI is now at **http://localhost:8080** ✨
 
 ### Option 2 — Docker
 
 ```bash
 docker compose up -d
-docker compose logs -f    # optional: watch startup
+docker compose logs -f
 ```
-
-Then open **http://localhost:8080**.
+> Your PalForge UI is now at **http://localhost:8080** ✨
 
 ### Option 3 — Manual Install
 
 ```bash
-cd palforge
 pip install -r requirements.txt
-cp .env.example .env          # optional customization
-
-python main.py                # dev mode (auto-reload)
-# or
-python run.py                 # production mode
+cp .env.example .env
+python main.py     # development (auto-reload)
+python run.py      # production
 ```
+> Your PalForge UI is now at **http://localhost:8080** ✨
 
-Then open **http://localhost:8080**.
+> **First run:** PalForge auto-installs SteamCMD on first launch. Each new server downloads the PalWorld dedicated server (~20 GB) automatically via SteamCMD.
 
-> **Note:** The first time you use PalForge, it will auto-install SteamCMD. After that, each new server will download the PalWorld dedicated server files (~20 GB) via SteamCMD automatically.
+> **New to PalWorld servers?** Start with the [Usage Guide](#usage-guide) after launching.
 
 ---
 
@@ -470,11 +470,9 @@ This project is licensed under the [MIT License](LICENSE). You are free to use, 
 ---
 
 <p align="center">
-  <a href="https://github.com/JamesCowx/palforge"><img src="static/palforge-logo.svg" alt="PalForge" width="240"></a>
-  <br><br>
-  <b>PalForge</b> — Forge your PalWorld server.
-  <br><br>
-  <sub>Built with ❤️ for the PalWorld community.</sub>
-  <br>
-  <sub>Not affiliated with Pocketpair, Inc.</sub>
+  <sub>
+    <b>PalForge</b> — Forge your PalWorld server. &nbsp;·&nbsp;
+    Built for the PalWorld community &nbsp;·&nbsp;
+    Not affiliated with Pocketpair, Inc.
+  </sub>
 </p>
