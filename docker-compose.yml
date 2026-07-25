@@ -1,0 +1,17 @@
+services:
+  palforge:
+    build: .
+    container_name: palforge
+    ports:
+      - "8080:8080"
+      - "8211:8211/udp"
+    volumes:
+      - ./servers:/app/servers
+      - ./steamcmd:/app/steamcmd
+      - ./servers.json:/app/servers.json
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8080
+      - SERVER_DATA_DIR=/app/servers
+      - STEAMCMD_DIR=/app/steamcmd
+    restart: unless-stopped

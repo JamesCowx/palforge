@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PalForge &mdash; PalWorld Server Manager</title>
+    <link rel="icon" type="image/svg+xml" href="/palforge-icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- ═════ SIDEBAR ═════ -->
+<aside id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+<div class="sidebar-logo-icon">&#x2692;</div>
+                <div>
+                    <h1>PalForge</h1>
+                    <span>Powered by Anvil</span>
+                </div>
+        </div>
+    </div>
+    <div class="sidebar-actions">
+        <input type="text" id="sidebar-search" class="sidebar-search" placeholder="Search servers..." />
+        <button id="btn-new-server" class="btn btn-primary" style="width:100%">+ New Server</button>
+    </div>
+    <ul id="server-list"></ul>
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-row">
+            <span class="sys-dot"></span>
+            <span id="sys-cpu">CPU --%</span>
+            <span class="sys-sep">&middot;</span>
+            <span id="sys-ram">RAM --%</span>
+        </div>
+        <div class="sidebar-footer-text">PalWorld Server Manager</div>
+    </div>
+</aside>
+
+<!-- ═════ MAIN ═════ -->
+<main id="main">
+    <div id="empty-state">
+        <div class="empty-icon">&#9830;</div>
+        <h2>No Server Selected</h2>
+        <p>Create a new PalWorld server or select one from the sidebar.</p>
+        <button class="btn btn-primary btn-lg" onclick="document.getElementById('btn-new-server').click()">+ Create First Server</button>
+    </div>
+
+    <div id="server-view" style="display:none">
+        <header id="server-header">
+            <div class="server-title-area">
+                <div class="server-avatar">&#9830;</div>
+                <div>
+                    <div class="server-title-row">
+                        <h2 id="server-name"></h2>
+                        <button id="btn-rename" class="btn btn-ghost" title="Rename (F2)">&#9998;</button>
+                    </div>
+                    <div class="server-subtitle" id="server-subtitle"></div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span id="server-status" class="status-badge"></span>
+                <button id="btn-start" class="btn btn-success">&#9654; Start</button>
+                <button id="btn-stop" class="btn btn-danger">&#9632; Stop</button>
+                <button id="btn-restart" class="btn btn-warning">&#8635; Restart</button>
+                <button id="btn-delete" class="btn btn-outline-danger">Delete</button>
+            </div>
+        </header>
+
+        <nav id="tabs">
+            <button class="tab active" data-tab="overview">Overview</button>
+            <button class="tab" data-tab="settings">Settings</button>
+            <button class="tab" data-tab="console">Console</button>
+            <button class="tab" data-tab="install">Install &amp; Updates</button>
+        </nav>
+
+        <div id="tab-content">
+            <!-- ══ Overview ══ -->
+            <div id="tab-overview" class="tab-pane active">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">&#9673;</div>
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="ov-status">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#9716;</div>
+                        <div class="stat-label">Uptime</div>
+                        <div class="stat-value" id="ov-uptime">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#9787;</div>
+                        <div class="stat-label">Players</div>
+                        <div class="stat-value" id="ov-players">--</div>
+                        <div class="stat-sub" id="ov-peak"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#9776;</div>
+                        <div class="stat-label">Memory</div>
+                        <div class="stat-value" id="ov-memory">--</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><h3>Server Details</h3></div>
+                    <div class="info-grid">
+                        <span class="info-label">Server ID</span>
+                        <span class="info-value" id="info-id">--</span>
+                        <span class="info-label">Port</span>
+                        <span class="info-value" id="info-port">--</span>
+                        <span class="info-label">Max Players</span>
+                        <span class="info-value" id="info-maxplayers">--</span>
+                        <span class="info-label">Install Path</span>
+                        <span class="info-value" id="info-path">--</span>
+                    </div>
+                </div>
+
+                <div class="card" id="connection-card">
+                    <div class="card-header"><h3>Connection Info</h3></div>
+                    <div class="connection-grid">
+                        <div class="conn-item">
+                            <div class="conn-label">Local Network</div>
+                            <div class="conn-row">
+                                <code class="conn-addr" id="conn-lan">--</code>
+                                <button class="btn btn-outline btn-sm conn-copy" data-target="conn-lan">Copy</button>
+                            </div>
+                            <div class="conn-hint">For players on the same network</div>
+                        </div>
+                        <div class="conn-item">
+                            <div class="conn-label">Internet</div>
+                            <div class="conn-row">
+                                <code class="conn-addr" id="conn-wan">--</code>
+                                <button class="btn btn-outline btn-sm conn-copy" data-target="conn-wan">Copy</button>
+                            </div>
+                            <div class="conn-hint">Port <strong id="conn-port">8211</strong> UDP must be forwarded</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Settings ══ -->
+            <div id="tab-settings" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Server Configuration</h3>
+                        <div style="display:flex;gap:10px;align-items:center;">
+                            <select id="settings-preset" class="preset-select">
+                                <option value="">Apply Preset...</option>
+                                <option value="casual">Casual</option>
+                                <option value="normal">Normal (Default)</option>
+                                <option value="hardcore">Hardcore</option>
+                                <option value="creative">Creative</option>
+                            </select>
+                            <button id="btn-reset-settings" class="btn btn-outline btn-sm">Defaults</button>
+                            <button id="btn-save-settings" class="btn btn-primary btn-sm">Save Changes</button>
+                        </div>
+                    </div>
+                    <div class="settings-toolbar">
+                        <input type="text" class="settings-search" id="settings-search" placeholder="Filter settings..." />
+                    </div>
+                    <div id="settings-container">
+                        <div id="settings-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Console ══ -->
+            <div id="tab-console" class="tab-pane">
+                <div class="card console-card">
+                    <div class="card-header" style="margin-bottom:0;">
+                        <h3>Live Console</h3>
+                        <div style="display:flex;gap:10px;">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="console-autoscroll" checked />
+                                Auto-scroll
+                            </label>
+                            <button id="btn-clear-console" class="btn btn-outline btn-sm">Clear</button>
+                        </div>
+                    </div>
+                    <pre id="console-output"></pre>
+                    <div class="console-toolbar">
+                        <span class="console-prompt">&gt;</span>
+                        <input type="text" id="console-input" placeholder="Enter command (/Info, /Save, /Broadcast, /ShowPlayers)" />
+                        <button id="btn-send-command" class="btn btn-primary btn-sm">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ Install ══ -->
+            <div id="tab-install" class="tab-pane">
+                <div class="card">
+                    <div class="card-header"><h3>Installation &amp; Updates</h3></div>
+                    <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">
+                        Download and manage the PalWorld dedicated server via SteamCMD.
+                        Install SteamCMD first, then download the server.
+                    </p>
+                    <div class="install-section">
+                        <div class="install-dot" id="steamcmd-dot"></div>
+                        <div>
+                            <div class="install-status-label">SteamCMD</div>
+                            <div class="install-status-text" id="steamcmd-status-text">Checking...</div>
+                        </div>
+                        <button id="btn-install-steamcmd" class="btn btn-outline btn-sm" style="margin-left:auto;">Install</button>
+                    </div>
+                    <div style="height:1px;background:var(--border-subtle);margin:8px 0 16px;"></div>
+                    <button id="btn-install-server" class="btn btn-primary btn-lg" style="width:100%">Install / Update PalWorld Server</button>
+                    <pre id="install-output"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ═════ MODAL ═════ -->
+<div id="modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal">
+        <h3 id="modal-title"></h3>
+        <div id="modal-body"></div>
+        <div class="modal-actions">
+            <button id="modal-cancel" class="btn btn-outline">Cancel</button>
+            <button id="modal-confirm" class="btn btn-primary">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
