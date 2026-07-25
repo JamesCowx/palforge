@@ -45,11 +45,11 @@ Whether you're hosting for a handful of friends on your home PC or running a 24/
 
 <p align="center">
   <br>
-  <a href="#quick-start"><code>⚡  Get Started  ⚡</code></a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/JamesCowx/palforge/issues"><code>🐛  Report Bug</code></a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/JamesCowx/palforge/discussions"><code>💬  Discussion</code></a>
+  <a href="#quick-start">⚡ Get Started</a>
+  &nbsp;&middot;&nbsp;
+  <a href="https://github.com/JamesCowx/palforge/issues">🐛 Report Bug</a>
+  &nbsp;&middot;&nbsp;
+  <a href="https://github.com/JamesCowx/palforge/discussions">💬 Discussion</a>
 </p>
 
 ---

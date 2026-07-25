@@ -11,7 +11,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 from services.config_manager import DEFAULT_PALWORLD_SETTINGS, get_default_settings, read_config, write_config
 
-SERVERS_DATA_FILE = "servers.json"
+SERVERS_DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "servers.json")
+_save_lock = asyncio.Lock()
 
 
 @dataclass
@@ -37,8 +38,9 @@ class ServerInstance:
 
     @property
     def config_path(self) -> str:
+        config_subdir = "WindowsServer" if platform.system() == "Windows" else "LinuxServer"
         return os.path.join(
-            self.install_dir, "Pal", "Saved", "Config", "WindowsServer", "PalWorldSettings.ini"
+            self.install_dir, "Pal", "Saved", "Config", config_subdir, "PalWorldSettings.ini"
         )
 
     @property
@@ -88,8 +90,12 @@ class ServerManager:
 
     def _load(self):
         if os.path.exists(SERVERS_DATA_FILE):
-            with open(SERVERS_DATA_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            try:
+                with open(SERVERS_DATA_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, OSError) as e:
+                print(f"[PalForge] Failed to load servers.json: {e}")
+                data = []
             for sdata in data:
                 instance = ServerInstance(
                     id=sdata["id"],
@@ -103,10 +109,13 @@ class ServerManager:
                 )
                 self._servers[instance.id] = instance
 
-    def _save(self):
-        data = [s.to_dict() for s in self._servers.values()]
-        with open(SERVERS_DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, default=str)
+    async def _save(self):
+        async with _save_lock:
+            data = [s.to_dict() for s in self._servers.values()]
+            tmp = SERVERS_DATA_FILE + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp, SERVERS_DATA_FILE)
 
     def list_servers(self) -> List[ServerInstance]:
         return list(self._servers.values())
@@ -114,36 +123,36 @@ class ServerManager:
     def get_server(self, server_id: str) -> Optional[ServerInstance]:
         return self._servers.get(server_id)
 
-    def create_server(self, name: str, port: int = 8211) -> ServerInstance:
-        server_id = str(uuid.uuid4())[:8]
+    async def create_server(self, name: str, port: int = 8211) -> ServerInstance:
+        server_id = str(uuid.uuid4())
         instance = ServerInstance(id=server_id, name=name, port=port)
         self._servers[server_id] = instance
-        self._save()
+        await self._save()
         return instance
 
-    def rename_server(self, server_id: str, name: str) -> bool:
+    async def rename_server(self, server_id: str, name: str) -> bool:
         server = self._servers.get(server_id)
         if not server:
             return False
         server.name = name
-        self._save()
+        await self._save()
         return True
 
-    def delete_server(self, server_id: str) -> bool:
+    async def delete_server(self, server_id: str) -> bool:
         server = self._servers.pop(server_id, None)
         if server:
-            self._save()
+            await self._save()
             return True
         return False
 
-    def update_settings(self, server_id: str, settings: Dict[str, Any]) -> bool:
+    async def update_settings(self, server_id: str, settings: Dict[str, Any]) -> bool:
         server = self._servers.get(server_id)
         if not server:
             return False
         server.settings = {**server.settings, **settings}
         if server.installed and os.path.exists(server.install_dir):
             write_config(server.config_path, server.settings)
-        self._save()
+        await self._save()
         return True
 
     def get_settings(self, server_id: str) -> Optional[Dict[str, Any]]:
@@ -173,16 +182,25 @@ class ServerManager:
         env["Path"] = env.get("Path", "") + os.pathsep + os.path.dirname(server.executable_path)
 
         try:
+            if not os.path.exists(server.executable_path):
+                server.status = "stopped"
+                server.log_lines.append("[ERROR] Server executable not found")
+                return False
+
+            subprocess_kwargs = dict(
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+                stdin=asyncio.subprocess.PIPE,
+                cwd=os.path.dirname(server.executable_path),
+                env=env,
+            )
             if platform.system() == "Windows":
                 server.process = await asyncio.create_subprocess_exec(
                     server.executable_path,
                     "-port", str(server.port),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
                     "-log",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT,
-                    cwd=os.path.dirname(server.executable_path),
-                    env=env,
+                    **subprocess_kwargs,
                 )
             else:
                 os.chmod(server.executable_path, 0o755)
@@ -191,16 +209,13 @@ class ServerManager:
                     "-port", str(server.port),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
                     "-log",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.STDOUT,
-                    cwd=os.path.dirname(server.executable_path),
-                    env=env,
+                    **subprocess_kwargs,
                 )
 
             server.uptime_start = time.time()
             asyncio.create_task(self._read_output(server))
             server.status = "running"
-            self._save()
+            await self._save()
             return True
         except Exception as e:
             server.status = "stopped"
@@ -230,7 +245,7 @@ class ServerManager:
         server.process = None
         server.uptime_start = None
         server.status = "stopped"
-        self._save()
+        await self._save()
         return True
 
     async def restart_server(self, server_id: str) -> bool:

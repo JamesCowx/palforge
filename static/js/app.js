@@ -1,5 +1,9 @@
 const API = {
-    async get(path) { const r = await fetch(path); return r.json(); },
+    async get(path) {
+        const r = await fetch(path);
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
+    },
     async post(path, body) {
         const r = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         if (!r.ok) throw new Error(await r.text());
@@ -25,25 +29,25 @@ let state = {
     currentSettings: {},
     uptimeInterval: null,
     networkInterval: null,
+    systemInterval: null,
 };
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
-/* ════════ TOAST ════════ */
 function toast(msg, type = 'info') {
     const c = $('#toast-container');
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
     el.textContent = msg;
+    el.setAttribute('role', 'alert');
     el.onclick = () => { el.classList.add('removing'); el.addEventListener('animationend', () => el.remove(), { once: true }); };
     c.appendChild(el);
     setTimeout(() => { if (el.parentNode) { el.classList.add('removing'); el.addEventListener('animationend', () => el.remove(), { once: true }); } }, 4200);
 }
 
-/* ════════ SERVER LIST ════════ */
 async function loadServers() {
-    try { state.servers = await API.get('/api/servers'); } catch (e) { /* */ }
+    try { state.servers = await API.get('/api/servers'); } catch (e) { console.warn('[PalForge] loadServers failed', e); }
     renderServerList();
     if (state.activeServerId) {
         const s = state.servers.find(x => x.id === state.activeServerId);
@@ -55,25 +59,26 @@ async function loadServers() {
 function renderServerList() {
     const list = $('#server-list');
     const filter = ($('#sidebar-search')?.value || '').toLowerCase();
-    let shown = filter ? state.servers.filter(s => s.name.toLowerCase().includes(filter) || s.id.toLowerCase().includes(filter)) : state.servers;
+    let shown = filter
+        ? state.servers.filter(s => s.name.toLowerCase().includes(filter) || s.id.toLowerCase().includes(filter) || String(s.port).includes(filter))
+        : state.servers;
 
     if (!shown.length) {
         list.innerHTML = `<div style="padding:28px 16px;text-align:center;color:var(--text-muted);font-size:11px;line-height:1.6;">${filter ? `No servers match "${E(filter)}"` : 'No servers yet<br><span style="font-size:10px">Press <b style="color:var(--accent)">N</b> to create one</span>'}</div>`;
         return;
     }
     list.innerHTML = shown.map(s => `
-        <li class="${s.id === state.activeServerId ? 'active' : ''}" data-id="${s.id}">
+        <li class="${s.id === state.activeServerId ? 'active' : ''}" data-id="${s.id}" tabindex="0" role="button" aria-label="Select ${E(s.name)}">
             <div class="server-list-info">
                 <div class="server-list-icon">&#9830;</div>
                 <div>
                     <div class="server-list-name">${E(s.name)}</div>
-                    <div class="server-list-port">:${s.port} &middot; ${s.uptime_seconds > 0 ? fmtUptime(s.uptime_seconds) : 'offline'}</div>
+                    <div class="server-list-port">:${s.port} \u00B7 ${s.uptime_seconds > 0 ? fmtUptime(s.uptime_seconds) : 'offline'}</div>
                 </div>
             </div>
             <span class="server-list-status ${s.status}">${s.status}</span>
         </li>
     `).join('');
-    list.querySelectorAll('li').forEach(li => li.addEventListener('click', () => selectServer(li.dataset.id)));
 }
 
 function selectServer(id) {
@@ -95,7 +100,6 @@ function showEmptyState() {
     if (state.uptimeInterval) { clearInterval(state.uptimeInterval); state.uptimeInterval = null; }
 }
 
-/* ════════ UPTIME / LIVE STATS ════════ */
 function startUptimeTick(s) {
     if (state.uptimeInterval) clearInterval(state.uptimeInterval);
     if (s.status !== 'running') return;
@@ -103,9 +107,11 @@ function startUptimeTick(s) {
         const sv = state.servers.find(x => x.id === state.activeServerId);
         if (!sv || sv.status !== 'running') { clearInterval(state.uptimeInterval); return; }
         animVal('ov-uptime', fmtUptime(sv.uptime_seconds));
-        animVal('ov-players', `${sv.player_count || 0} / ${sv.settings.ServerPlayerMaxNum || 32}`);
+        animVal('ov-players', `${sv.player_count || 0} / ${sv.settings?.ServerPlayerMaxNum || 32}`);
         if (sv.memory_mb > 0) animVal('ov-memory', sv.memory_mb.toFixed(0) + ' MB');
-        if (sv.max_players_seen > 0) $('#ov-peak').textContent = `Peak: ${sv.max_players_seen}`;
+        const peak = $('#ov-peak');
+        if (sv.max_players_seen > 0) { peak.textContent = `Peak: ${sv.max_players_seen}`; peak.removeAttribute('aria-hidden'); }
+        else { peak.textContent = ''; peak.setAttribute('aria-hidden', 'true'); }
     }, 1000);
 }
 
@@ -130,7 +136,7 @@ function renderServerView(s) {
     $('#empty-state').style.display = 'none';
     $('#server-view').style.display = 'flex';
     $('#server-name').textContent = s.name;
-    $('#server-subtitle').textContent = `Port ${s.port}  &middot;  ID ${s.id}`;
+    $('#server-subtitle').textContent = `Port ${s.port} \u00B7 ID ${s.id}`;
     $('#server-status').textContent = s.status;
     $('#server-status').className = `status-badge status-${s.status}`;
 
@@ -144,8 +150,10 @@ function renderServerView(s) {
     ovStatus.style.color = colors[s.status] || 'var(--text-primary)';
 
     $('#ov-uptime').textContent = s.status === 'running' ? fmtUptime(s.uptime_seconds) : '--';
-    $('#ov-players').textContent = `${s.player_count || 0} / ${s.settings.ServerPlayerMaxNum || 32}`;
-    $('#ov-peak').textContent = s.max_players_seen > 0 ? `Peak: ${s.max_players_seen}` : '';
+    $('#ov-players').textContent = `${s.player_count || 0} / ${s.settings?.ServerPlayerMaxNum || 32}`;
+    const peak = $('#ov-peak');
+    if (s.max_players_seen > 0) { peak.textContent = `Peak: ${s.max_players_seen}`; peak.removeAttribute('aria-hidden'); }
+    else { peak.textContent = ''; peak.setAttribute('aria-hidden', 'true'); }
     const mem = s.memory_mb || 0;
     const memEl = $('#ov-memory');
     memEl.textContent = mem > 0 ? mem.toFixed(0) + ' MB' : '--';
@@ -153,16 +161,15 @@ function renderServerView(s) {
 
     $('#info-id').textContent = s.id;
     $('#info-port').textContent = s.port;
-    $('#info-maxplayers').textContent = s.settings.ServerPlayerMaxNum || 32;
+    $('#info-maxplayers').textContent = s.settings?.ServerPlayerMaxNum || 32;
     $('#info-path').textContent = s.install_dir;
 }
 
-/* ════════ RENAME ════════ */
 async function showRenameModal() {
     const s = state.servers.find(x => x.id === state.activeServerId);
     if (!s) return;
     showModal('Rename Server',
-        `<div class="modal-body-field"><label>Server Name</label><input type="text" id="modal-rename-input" value="${E(s.name)}" /></div>`,
+        `<div class="modal-body-field"><label for="modal-rename-input">Server Name</label><input type="text" id="modal-rename-input" value="${E(s.name)}" /></div>`,
         async () => {
             const name = document.getElementById('modal-rename-input').value.trim();
             if (!name) return toast('Name cannot be empty', 'error');
@@ -172,7 +179,6 @@ async function showRenameModal() {
         }, 'Rename');
 }
 
-/* ════════ SETTINGS ════════ */
 const CATS = {
     'Server': ['ServerName','ServerDescription','ServerPassword','AdminPassword','ServerPlayerMaxNum','PublicPort','PublicIP','Region','RCONEnabled','RCONPort','bUseAuth','BanListURL','ServerNamePrefix','CoopPlayerMaxNum','bIsMultiplay','bIsPvP','Difficulty'],
     'World': ['DayTimeSpeedRate','NightTimeSpeedRate'],
@@ -185,11 +191,20 @@ const CATS = {
 function getCat(k) { for (const [c, ks] of Object.entries(CATS)) if (ks.includes(k)) return c; return 'Other'; }
 
 async function loadSettings() {
-    const s = state.servers.find(x => x.id === state.activeServerId);
-    if (!s) return;
-    state.currentSettings = await API.get(`/api/servers/${state.activeServerId}/settings`);
-    renderSettings(state.currentSettings, $('#settings-search')?.value || '');
+    const pane = document.getElementById('tab-settings');
+    if (!pane?.classList.contains('active')) return;
+    const container = $('#settings-container');
+    if (container) container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">Loading settings...</div>';
+    try {
+        state.currentSettings = await API.get(`/api/servers/${state.activeServerId}/settings`);
+        renderSettings(state.currentSettings, $('#settings-search')?.value || '');
+    } catch (e) {
+        toast('Failed to load settings', 'error');
+        if (container) container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">Failed to load settings</div>';
+    }
 }
+
+let settingsSearchDebounce;
 
 function renderSettings(settings, filter = '') {
     const container = $('#settings-container');
@@ -210,7 +225,7 @@ function renderSettings(settings, filter = '') {
         grouped['Other'].forEach(([k, v]) => { html += renderField(k, v); });
         html += `</div></div>`;
     }
-    container.innerHTML = html || `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">No settings match filter</div>`;
+    container.innerHTML = html || '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:13px;">No settings match filter</div>';
 }
 
 function renderField(key, value) {
@@ -245,25 +260,32 @@ async function saveSettings() {
 }
 
 async function resetSettings() {
-    const def = await API.get('/api/servers/defaults/settings');
-    state.currentSettings = def;
-    renderSettings(def, $('#settings-search')?.value || '');
-    toast('Reset to defaults (unsaved)', 'info');
+    try {
+        const def = await API.get('/api/servers/defaults/settings');
+        state.currentSettings = def;
+        renderSettings(def, $('#settings-search')?.value || '');
+        toast('Reset to defaults (unsaved)', 'info');
+    } catch (e) {
+        toast('Failed to reset settings', 'error');
+    }
 }
 
 async function applyPreset(id) {
     if (!id) return;
-    const presets = await API.get('/api/servers/defaults/presets');
-    const p = presets[id]; if (!p) return;
-    const def = await API.get('/api/servers/defaults/settings');
-    state.currentSettings = { ...def, ...p.settings };
-    renderSettings(state.currentSettings, $('#settings-search')?.value || '');
-    toast(`Applied "${p.label}" preset (unsaved)`, 'info');
+    try {
+        const presets = await API.get('/api/servers/defaults/presets');
+        const p = presets[id]; if (!p) return;
+        const def = await API.get('/api/servers/defaults/settings');
+        state.currentSettings = { ...def, ...p.settings };
+        renderSettings(state.currentSettings, $('#settings-search')?.value || '');
+        toast(`Applied "${p.label}" preset (unsaved)`, 'info');
+    } catch (e) {
+        toast('Failed to apply preset', 'error');
+    }
     $('#settings-preset').value = '';
 }
 
-/* ════════ CONSOLE ════════ */
-function connectConsole(serverId) {
+function connectConsole(serverId, retries = 5) {
     if (state.consoleWs) { state.consoleWs.close(); state.consoleWs = null; }
     const output = $('#console-output');
     if (!output) return;
@@ -273,7 +295,10 @@ function connectConsole(serverId) {
     const ws = new WebSocket(`${proto}//${location.host}/ws/console/${serverId}`);
     state.consoleWs = ws;
     ws.onmessage = e => { if (e.data !== '__PING__') appendLog(e.data); };
-    ws.onclose = () => { state.consoleWs = null; };
+    ws.onclose = () => {
+        state.consoleWs = null;
+        if (retries > 0) setTimeout(() => connectConsole(serverId, retries - 1), 2000);
+    };
     ws.onerror = () => { state.consoleWs = null; };
 }
 
@@ -291,7 +316,7 @@ function appendLog(text) {
     span.textContent = text;
     output.appendChild(span);
     output.appendChild(document.createTextNode('\n'));
-    while (output.children.length > 600) { output.removeChild(output.firstChild); output.removeChild(output.firstChild); }
+    while (output.children.length > 1200) { output.removeChild(output.firstChild); }
     if ($('#console-autoscroll')?.checked) output.scrollTop = output.scrollHeight;
 }
 
@@ -305,7 +330,6 @@ async function sendCommand() {
     input.value = ''; input.focus();
 }
 
-/* ════════ INSTALL ════════ */
 async function checkSteamcmdStatus() {
     try {
         const r = await API.get('/api/install/steamcmd/status');
@@ -314,7 +338,7 @@ async function checkSteamcmdStatus() {
         if (dot) dot.className = 'install-dot ' + (r.installed ? 'ok' : 'bad');
         const btn = $('#btn-install-steamcmd');
         if (btn) btn.style.display = r.installed ? 'none' : '';
-    } catch (e) { /* */ }
+    } catch (e) { console.warn('[PalForge] checkSteamcmdStatus failed', e); }
 }
 
 async function installSteamcmd() {
@@ -338,18 +362,25 @@ async function installServer() {
         output.scrollTop = output.scrollHeight;
         if (e.data.startsWith('__COMPLETE__')) { ws.close(); toast('Server installed', 'success'); loadServers().then(() => { const sv = state.servers.find(x => x.id === state.activeServerId); if (sv) renderServerView(sv); }); }
     };
-    ws.onclose = () => { state.installWs = null; $('#btn-install-server').disabled = false; $('#btn-install-server').textContent = 'Install / Update PalWorld Server'; };
-    ws.onerror = () => { state.installWs = null; $('#btn-install-server').disabled = false; };
+    ws.onclose = () => {
+        state.installWs = null;
+        const btn = $('#btn-install-server');
+        btn.disabled = false; btn.textContent = 'Install / Update PalWorld Server';
+    };
+    ws.onerror = () => {
+        state.installWs = null;
+        const btn = $('#btn-install-server');
+        btn.disabled = false; btn.textContent = 'Install / Update PalWorld Server';
+    };
     $('#btn-install-server').disabled = true; $('#btn-install-server').textContent = 'Installing...';
 }
 
-/* ════════ SYSTEM ════════ */
 async function updateSystemInfo() {
     try {
         const i = await API.get('/api/system');
         $('#sys-cpu').textContent = `CPU ${i.cpu_percent || 0}%`;
         $('#sys-ram').textContent = `RAM ${i.memory_percent || 0}%`;
-    } catch (e) { /* */ }
+    } catch (e) { console.warn('[PalForge] updateSystemInfo failed', e); }
 }
 
 async function updateConnectionInfo() {
@@ -363,37 +394,44 @@ async function updateConnectionInfo() {
         if (lanEl) lanEl.textContent = `${net.local_ip}:${port}`;
         if (wanEl) wanEl.textContent = `${net.public_ip}:${port}`;
         if (portEl) portEl.textContent = port;
-    } catch (e) { /* */ }
+    } catch (e) { console.warn('[PalForge] updateConnectionInfo failed', e); }
 }
 
-/* ════════ MODAL ════════ */
 function showModal(title, bodyHtml, onConfirm, confirmText = 'Confirm', confirmClass = 'btn-primary') {
+    const overlay = $('#modal-overlay');
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', 'modal-title');
     $('#modal-title').textContent = title;
     $('#modal-body').innerHTML = bodyHtml;
-    $('#modal-overlay').style.display = 'flex';
+    overlay.style.display = 'flex';
     $('#modal-confirm').className = `btn ${confirmClass}`;
     $('#modal-confirm').textContent = confirmText;
     $('#modal-confirm').onclick = async () => {
         $('#modal-confirm').disabled = true;
-        try { await onConfirm(); } catch (e) { /* */ }
+        try { await onConfirm(); } catch (e) { console.warn('[PalForge] modal action failed', e); }
         $('#modal-confirm').disabled = false;
-        $('#modal-overlay').style.display = 'none';
+        overlay.style.display = 'none';
     };
-    $('#modal-cancel').onclick = () => { $('#modal-overlay').style.display = 'none'; };
-    $('#modal-overlay').onclick = e => { if (e.target === $('#modal-overlay')) $('#modal-overlay').style.display = 'none'; };
+    $('#modal-cancel').onclick = () => { overlay.style.display = 'none'; };
+    overlay.onclick = e => { if (e.target === overlay) overlay.style.display = 'none'; };
+    document.addEventListener('keydown', function escHandler(e) { if (e.key === 'Escape') { overlay.style.display = 'none'; document.removeEventListener('keydown', escHandler); } });
     setTimeout(() => { const inp = document.querySelector('#modal-name, #modal-rename-input'); if (inp) inp.focus(); }, 120);
 }
 
 async function showNewServerModal() {
     showModal('Create New Server',
-        `<div class="modal-body-field"><label>Server Name</label><input type="text" id="modal-name" placeholder="My PalWorld Server" /></div>
-         <div class="modal-body-field"><label>Port</label><input type="number" id="modal-port" value="8211" /></div>
-         <div class="modal-body-field"><label>Max Players</label><input type="number" id="modal-players" value="32" /></div>`,
+        `<div class="modal-body-field"><label for="modal-name">Server Name</label><input type="text" id="modal-name" placeholder="My PalWorld Server" /></div>
+         <div class="modal-body-field"><label for="modal-port">Port</label><input type="number" id="modal-port" value="8211" min="1024" max="65535" /></div>
+         <div class="modal-body-field"><label for="modal-players">Max Players</label><input type="number" id="modal-players" value="32" min="1" max="100" /></div>`,
         async () => {
             const name = document.getElementById('modal-name').value.trim() || 'Unnamed Server';
-            const port = parseInt(document.getElementById('modal-port').value) || 8211;
-            const players = parseInt(document.getElementById('modal-players').value) || 32;
+            const port = parseInt(document.getElementById('modal-port').value, 10);
+            const players = parseInt(document.getElementById('modal-players').value, 10);
+            if (isNaN(port) || port < 1024 || port > 65535) { toast('Port must be 1024-65535', 'error'); return; }
+            if (isNaN(players) || players < 1) { toast('Max players must be at least 1', 'error'); return; }
             const s = await API.post('/api/servers', { name, port });
+            if (!s || !s.id) { toast('Server creation failed', 'error'); return; }
             await API.put(`/api/servers/${s.id}/settings`, { settings: { ServerPlayerMaxNum: players, ServerName: name, PublicPort: port } });
             await loadServers();
             selectServer(s.id);
@@ -410,12 +448,14 @@ async function deleteServer() {
         'Delete', 'btn-danger');
 }
 
-function E(s) { const d = document.createElement('div'); d.textContent = s ?? ''; return d.innerHTML; }
+function E(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
-/* ════════ EVENT BINDINGS ════════ */
 document.addEventListener('input', e => {
     if (e.target.id === 'sidebar-search') renderServerList();
-    if (e.target.id === 'settings-search') renderSettings(state.currentSettings, e.target.value);
+    if (e.target.id === 'settings-search') {
+        clearTimeout(settingsSearchDebounce);
+        settingsSearchDebounce = setTimeout(() => renderSettings(state.currentSettings, e.target.value), 150);
+    }
 });
 
 document.addEventListener('change', e => {
@@ -425,6 +465,7 @@ document.addEventListener('change', e => {
 document.addEventListener('click', e => {
     if (e.target.classList.contains('tab')) {
         const name = e.target.dataset.tab;
+        if (e.target.classList.contains('active')) return;
         $$('.tab').forEach(t => t.classList.remove('active'));
         e.target.classList.add('active');
         $$('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -436,7 +477,23 @@ document.addEventListener('click', e => {
     }
 });
 
+// Event delegation for server list
+$('#server-list').addEventListener('click', e => {
+    const li = e.target.closest('li[data-id]');
+    if (li) selectServer(li.dataset.id);
+});
+
+// Keyboard navigation for server list
+$('#server-list').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const li = e.target.closest('li[data-id]');
+        if (li) selectServer(li.dataset.id);
+    }
+});
+
 $('#btn-new-server').addEventListener('click', showNewServerModal);
+$('#btn-empty-create').addEventListener('click', showNewServerModal);
 $('#btn-rename').addEventListener('click', showRenameModal);
 
 document.addEventListener('click', e => {
@@ -452,7 +509,7 @@ const withLoading = (btnId, action, label, okMsg, errMsg) => {
     const btn = $(btnId);
     btn.addEventListener('click', async () => {
         btn.disabled = true; const orig = btn.textContent;
-        btn.innerHTML = `<span style="display:inline-block;animation:statusBreathe 0.8s ease-in-out infinite;">&#9679;</span> Working...`;
+        btn.innerHTML = '<span class="btn-working">\u25CF</span> Working...';
         try { await action(); toast(okMsg, 'success'); } catch (e) { toast(errMsg, 'error'); }
         await loadServers();
         if (state.activeServerId) {
@@ -477,21 +534,26 @@ $('#btn-install-server').addEventListener('click', installServer);
 
 $('#console-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendCommand(); });
 
-// Keyboard shortcuts
 document.addEventListener('keydown', e => {
     if (e.ctrlKey || e.metaKey || ['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); showNewServerModal(); }
     if (e.key === 'F2' && state.activeServerId) { e.preventDefault(); showRenameModal(); }
+    if (e.key === 'Escape') {
+        const overlay = $('#modal-overlay');
+        if (overlay.style.display !== 'none') overlay.style.display = 'none';
+    }
 });
 
 setInterval(loadServers, 6000);
-setInterval(() => { updateSystemInfo(); updateConnectionInfo(); }, 10000);
+state.systemInterval = setInterval(() => { updateSystemInfo(); updateConnectionInfo(); }, 10000);
 
 Promise.all([loadServers(), updateSystemInfo(), updateConnectionInfo()]).then(() => {
-    if (state.servers.length > 0 && !state.activeServerId) selectServer(state.servers[0].id);
+    if (state.servers.length > 0 && !state.activeServerId) {
+        const first = state.servers.find(s => s.installed) || state.servers[0];
+        selectServer(first.id);
+    }
 });
 
-// Stop the `> Working...` on the button when server state changes after a few seconds
 setInterval(() => {
     if (state.activeServerId) {
         const s = state.servers.find(x => x.id === state.activeServerId);

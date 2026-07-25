@@ -31,14 +31,15 @@ def list_servers():
 
 
 @router.post("")
-def create_server(req: CreateServerRequest):
-    server = server_manager.create_server(req.name, req.port)
+async def create_server(req: CreateServerRequest):
+    server = await server_manager.create_server(req.name, req.port)
     return server.to_dict()
 
 
 @router.delete("/{server_id}")
-def delete_server(server_id: str):
-    if not server_manager.delete_server(server_id):
+async def delete_server(server_id: str):
+    ok = await server_manager.delete_server(server_id)
+    if not ok:
         raise HTTPException(status_code=404, detail="Server not found")
     return {"ok": True}
 
@@ -52,8 +53,9 @@ def get_server(server_id: str):
 
 
 @router.put("/{server_id}/rename")
-def rename_server(server_id: str, req: RenameServerRequest):
-    if not server_manager.rename_server(server_id, req.name):
+async def rename_server(server_id: str, req: RenameServerRequest):
+    ok = await server_manager.rename_server(server_id, req.name)
+    if not ok:
         raise HTTPException(status_code=404, detail="Server not found")
     return {"ok": True}
 
@@ -101,8 +103,9 @@ def get_settings(server_id: str):
 
 
 @router.put("/{server_id}/settings")
-def update_settings(server_id: str, req: UpdateSettingsRequest):
-    if not server_manager.update_settings(server_id, req.settings):
+async def update_settings(server_id: str, req: UpdateSettingsRequest):
+    ok = await server_manager.update_settings(server_id, req.settings)
+    if not ok:
         raise HTTPException(status_code=404, detail="Server not found")
     return {"ok": True}
 

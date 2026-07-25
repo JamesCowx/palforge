@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import APIRouter, WebSocket
+from starlette.websockets import WebSocketDisconnect
 
 from services.server_manager import server_manager
 

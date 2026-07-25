@@ -12,5 +12,5 @@ if __name__ == "__main__":
         log_level=os.getenv("LOG_LEVEL", "info"),
         access_log=True,
         proxy_headers=True,
-        forwarded_allow_ips="*",
+        forwarded_allow_ips=os.getenv("FORWARDED_ALLOW_IPS", "127.0.0.1"),
     )
