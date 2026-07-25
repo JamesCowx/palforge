@@ -1,30 +1,72 @@
-# PalForge
+<p align="center">
+  <img src="static/palforge-logo.svg" alt="PalForge" width="480">
+</p>
 
-A web-based GUI for creating, configuring, and hosting [PalWorld](https://store.steampowered.com/app/1623730/Palworld/) dedicated servers. Built with **FastAPI** + vanilla **HTML/CSS/JS** featuring live console streaming, settings presets, one-click SteamCMD installation, real-time server monitoring, and a premium dark UI.
+<p align="center">
+  <em>Forge your PalWorld server — a premium web GUI for creating, configuring, and hosting PalWorld dedicated servers.</em>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-green.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
+<p align="center">
+  <a href="https://github.com/JamesCowx/palforge/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="MIT License"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI"></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="https://github.com/JamesCowx/palforge"><img src="https://img.shields.io/github/stars/JamesCowx/palforge?style=flat-square&logo=github" alt="GitHub Stars"></a>
+  <a href="https://github.com/JamesCowx/palforge/issues"><img src="https://img.shields.io/github/issues/JamesCowx/palforge?style=flat-square" alt="Issues"></a>
+</p>
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Online Deployment](#online-deployment--vps--cloud-server)
+- [Usage Guide](#usage-guide)
+- [Connecting Players](#connecting-others-to-your-server)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Settings Presets](#settings-presets)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [FAQ](#faq)
+- [Tech Stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+**PalForge** transforms the tedious command-line management of PalWorld dedicated servers into a sleek, intuitive web experience. Spin up servers, tweak every setting with toggles and dropdowns, watch real-time console logs stream in your browser, and share connection info with friends in one click — all from a beautifully crafted dark UI.
+
+Whether you're hosting for a handful of friends on your home PC or running a 24/7 community server on a cloud VPS, PalForge handles the heavy lifting so you can focus on playing.
 
 ---
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| **Multi-Server Management** | Create, rename, and delete multiple PalWorld server instances |
-| **One-Click Install** | Downloads SteamCMD and PalWorld dedicated server (App ID 2394010) automatically |
-| **Live Console** | WebSocket-based real-time log streaming with colorized output |
-| **Settings Editor** | Full PalWorldSettings.ini editor with categorized fields and preset templates |
-| **Server Controls** | Start, stop, restart with live status indicators and uptime tracking |
-| **Player Tracking** | Real-time player count, peak players, and uptime counter |
-| **Connection Info** | Auto-detects LAN and public IP for easy sharing with friends |
-| **Settings Presets** | Casual, Normal, Hardcore, and Creative preset templates |
-| **System Monitoring** | CPU and RAM usage display in sidebar |
-| **Keyboard Shortcuts** | `N` = new server, `F2` = rename |
-| **Responsive Dark Theme** | Premium UI with warm amber accent, animations, and micro-interactions |
-| **Docker Ready** | One-command deployment with Docker and docker-compose |
+<p align="center">
+  <img src="static/palforge-icon.svg" alt="PalForge UI Preview" width="600">
+  <br>
+  <em>PalForge web interface — manage everything from your browser.</em>
+</p>
+
+| | Feature | |
+|-|---------|-|
+| 🖥️ | **Multi-Server Management** | Create, rename, and delete multiple server instances from the sidebar |
+| ⚡ | **One-Click Install** | Downloads SteamCMD and PalWorld server (App ID 2394010) automatically |
+| 📡 | **Live Console** | WebSocket-based real-time log streaming with colorized output |
+| ⚙️ | **Settings Editor** | Full `PalWorldSettings.ini` editor with categorized fields and preset templates |
+| ▶️ | **Server Controls** | Start, stop, restart with live status indicators and uptime tracking |
+| 👥 | **Player Tracking** | Real-time player count, peak players, and uptime counter |
+| 🌐 | **Connection Info** | Auto-detects LAN and public IP for easy sharing with friends |
+| 🎯 | **Settings Presets** | Casual, Normal, Hardcore, and Creative templates — apply in one click |
+| 📊 | **System Monitoring** | CPU and RAM usage display in the sidebar |
+| ⌨️ | **Keyboard Shortcuts** | `N` = new server, `F2` = rename |
+| 🎨 | **Responsive Dark Theme** | Premium amber-accented UI with animations and micro-interactions |
+| 🐳 | **Docker Ready** | One-command deployment with Docker Compose |
 
 ---
 
@@ -32,53 +74,46 @@ A web-based GUI for creating, configuring, and hosting [PalWorld](https://store.
 
 ### Prerequisites
 
-- **Python 3.10+**
+- **Python 3.10+** or **Docker**
 - **~25 GB free disk space** for PalWorld server files
 - **Windows, Linux, or macOS**
 
-### Option 1 &mdash; Direct Install (Recommended)
+### Option 1 — Direct Install (Recommended)
 
 ```bash
-# Clone this repository
-git clone https://github.com/YOUR_USERNAME/palforge.git
+git clone https://github.com/JamesCowx/palforge.git
 cd palforge
 
-# Run the installer and launcher
 start.bat       # Windows
 ./start.sh      # Linux/macOS
 ```
 
-Then open **http://localhost:8080** in your browser.
+Then open **http://localhost:8080**.
 
-### Option 2 &mdash; Docker
+### Option 2 — Docker
 
 ```bash
-# Build and start (requires Docker and docker-compose)
 docker compose up -d
-
-# View logs
-docker compose logs -f
+docker compose logs -f    # optional: watch startup
 ```
 
 Then open **http://localhost:8080**.
 
-### Option 3 &mdash; Manual Install
+### Option 3 — Manual Install
 
 ```bash
 cd palforge
 pip install -r requirements.txt
-cp .env.example .env    # Optional: customize configuration
+cp .env.example .env          # optional customization
 
-# Development mode (auto-reload on code changes)
-python main.py
-
-# Production mode
-python run.py
+python main.py                # dev mode (auto-reload)
+# or
+python run.py                 # production mode
 ```
 
 Then open **http://localhost:8080**.
 
-> **Note:** The first time you use PalForge, it will auto-install SteamCMD. After that, each new server will auto-download the PalWorld dedicated server files via SteamCMD (approx. 20 GB).
+> **Note:** The first time you use PalForge, it will auto-install SteamCMD. After that, each new server will download the PalWorld dedicated server files (~20 GB) via SteamCMD automatically.
 
 ---
 
@@ -94,70 +129,48 @@ Run PalForge on a cloud VM so your PalWorld server stays online 24/7.
 | **RAM** | 8 GB | 16 GB |
 | **Disk** | 50 GB SSD | 100 GB SSD |
 | **OS** | Ubuntu 22.04 / Debian 12 | Ubuntu 24.04 |
-| **Bandwidth** | 1 Gbps unmetered | 1 Gbps unmetered |
+| **Bandwidth** | 1 Gbps | 1 Gbps unmetered |
 
-### Step-by-Step (Docker — Easiest)
+### Docker Deploy (Easiest)
 
 ```bash
-# 1. SSH into your VPS
 ssh root@YOUR_VPS_IP
-
-# 2. Install Docker
 curl -fsSL https://get.docker.com | sh
-
-# 3. Clone PalForge
 git clone https://github.com/JamesCowx/palforge.git
 cd palforge
-
-# 4. Start it
 docker compose up -d
-
-# 5. Check it's running
-docker compose logs -f
 ```
 
-Your web UI is now live at **http://YOUR_VPS_IP:8080**.
+Your web UI is live at **http://YOUR_VPS_IP:8080**.
 
-### Firewall / Security Group
-
-Open these ports in your VPS firewall:
+### Firewall Rules
 
 | Port | Protocol | Purpose |
 |------|----------|---------|
 | `8080` | TCP | PalForge web UI |
 | `8211` | UDP | PalWorld game server (per instance) |
 
-**Ubuntu (ufw):**
 ```bash
+# Ubuntu (ufw)
 ufw allow 8080/tcp
 ufw allow 8211/udp
 ufw enable
 ```
 
-**DigitalOcean / Vultr / Linode:** Add an inbound firewall rule via their web panel.
+**DigitalOcean / Vultr / Linode:** Add inbound rules via their cloud firewall panel.
 
-### Step-by-Step (Manual — No Docker)
+### Manual Deploy + systemd
 
 ```bash
-# 1. SSH into your VPS
 ssh root@YOUR_VPS_IP
-
-# 2. Install Python 3.10+ and pip
 apt update && apt install -y python3 python3-pip python3-venv git
-
-# 3. Clone and install
 git clone https://github.com/JamesCowx/palforge.git
 cd palforge
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-
-# 4. Run (stays alive via systemd — see below)
-python run.py
 ```
-
-### Keep It Alive (systemd Service)
 
 Create `/etc/systemd/system/palforge.service`:
 
@@ -178,7 +191,6 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Then enable and start:
 ```bash
 systemctl daemon-reload
 systemctl enable palforge
@@ -186,11 +198,10 @@ systemctl start palforge
 systemctl status palforge
 ```
 
-### (Optional) Add SSL with Nginx + Let's Encrypt
-
-Create `/etc/nginx/sites-available/palforge`:
+### SSL with Nginx + Let's Encrypt
 
 ```nginx
+# /etc/nginx/sites-available/palforge
 server {
     listen 80;
     server_name your-domain.com;
@@ -214,49 +225,66 @@ certbot --nginx -d your-domain.com
 nginx -t && systemctl reload nginx
 ```
 
-> **Note:** The `proxy_set_header Upgrade` and `Connection` lines are required for WebSocket support (live console + install progress).
+> **Note:** The `Upgrade` and `Connection` proxy headers are required for WebSocket support (live console + install progress).
 
 ---
 
-## Usage
+## Usage Guide
 
-1. **Install SteamCMD** &mdash; Navigate to the **Install &amp; Updates** tab and click **Install SteamCMD**. This is a one-time setup.
+### 1. Install SteamCMD
 
-2. **Create a Server** &mdash; Press `N` or click **+ New Server** in the sidebar. Set a name, port (default 8211), and max players.
+Navigate to **Install & Updates** → click **Install SteamCMD**. One-time setup.
 
-3. **Install PalWorld** &mdash; Select your server from the sidebar, go to **Install &amp; Updates**, and click **Install / Update PalWorld Server**. This downloads the dedicated server (~20 GB). Wait for the `__COMPLETE__` message.
+### 2. Create a Server
 
-4. **Configure Settings** &mdash; Go to the **Settings** tab to fine-tune everything:
-   - Server name, password, admin password
-   - Player limits, PvP settings, cooperative play
-   - Experience rates, capture rates, damage multipliers
-   - Building decay, egg hatching time, drop rates
-   - Use the **Presets** dropdown (Casual, Normal, Hardcore, Creative) for quick configuration
+Press `N` or click **+ New Server** in the sidebar. Set a name, port (default 8211), and max players.
 
-5. **Start the Server** &mdash; Click the green **Start** button. The Overview tab shows live stats: uptime, active players, memory usage, and peak player count.
+### 3. Install PalWorld
 
-6. **Connect Players** &mdash; The **Connection Info** card (Overview tab) shows the exact addresses:
-   - **Local Network** &mdash; For players on the same Wi-Fi/LAN: `192.168.x.x:8211`
-   - **Internet** &mdash; For remote players: `your-public-ip:8211` (requires port forwarding)
+Select your server → **Install & Updates** → **Install / Update PalWorld Server**. Wait for the `__COMPLETE__` message (~20 GB download).
 
-   In PalWorld: **Join Multiplayer** → **Direct Connection** → paste the address.
+### 4. Configure Settings
+
+Go to the **Settings** tab to fine-tune gameplay:
+
+- Server name, password, admin password
+- Player limits, PvP, cooperative play
+- XP rates, capture rates, damage multipliers
+- Building decay, egg hatching, drop rates
+- Use the **Presets** dropdown for instant configuration
+
+### 5. Start the Server
+
+Click the green **Start** button. The **Overview** tab shows live stats: uptime, active players, memory usage, and peak player count.
+
+### 6. Connect Players
+
+The **Connection Info** card shows the exact addresses to share:
+
+- **Local:** `192.168.x.x:8211` — for players on the same network
+- **Internet:** `your-public-ip:8211` — for remote players (requires port forwarding)
+
+In PalWorld: **Join Multiplayer** → **Direct Connection** → paste the address.
 
 ---
 
 ## Connecting Others to Your Server
 
 ### Local Network (Same Wi-Fi/LAN)
-Share the **Local Network** address shown in Connection Info. No extra setup needed.
+
+Share the **Local Network** address from Connection Info. No extra setup needed.
 
 ### Over the Internet
-1. **Find your public IP** &mdash; The Connection Info card auto-detects it
-2. **Forward UDP port 8211** on your router to your machine's local IP
+
+1. Find your public IP — PalForge auto-detects it
+2. Forward **UDP port 8211** on your router to your machine
 3. Share the **Internet** address with friends
 
-### Port Forwarding Guide (Common Routers)
-| Router | Instructions |
-|--------|-------------|
-| **Most ISPs** | Log in to `192.168.1.1` → Port Forwarding → Add rule: UDP 8211 → Your PC IP |
+### Port Forwarding Guide
+
+| Router | Steps |
+|--------|-------|
+| **Most ISP routers** | Log in to `192.168.1.1` → Port Forwarding → Add rule: UDP 8211 → Your PC IP |
 | **Windows Firewall** | Allow `PalServer.exe` (UDP inbound on port 8211) |
 
 ---
@@ -310,7 +338,7 @@ palforge/
 │   ├── palforge-logo.svg    # Full logo (anvil + hammer + text)
 │   ├── palforge-icon.svg    # Favicon / app icon
 │   ├── css/
-│   │   └── style.css         # Custom dark UI design system
+│   │   └── style.css        # Custom dark UI design system
 │   └── js/
 │       └── app.js           # SPA logic (API, WebSocket, UI)
 │
@@ -341,7 +369,7 @@ palforge/
 | `GET` | `/api/servers/{id}/settings` | Get current settings |
 | `PUT` | `/api/servers/{id}/settings` | Update settings (`{settings: {...}}`) |
 | `GET` | `/api/servers/defaults/settings` | Get all default settings |
-| `GET` | `/api/servers/defaults/presets` | Get available presets (casual, normal, hardcore, creative) |
+| `GET` | `/api/servers/defaults/presets` | Get available presets |
 
 ### Console & Commands
 
@@ -374,11 +402,11 @@ palforge/
 ## Settings Presets
 
 | Preset | XP Rate | Capture Rate | PvP | Death Penalty | Difficulty |
-|--------|---------|-------------|-----|---------------|------------|
-| **Casual** | 2x | 2x | Off | None | Easy |
-| **Normal** | 1x | 1x | Off | All | Standard |
-| **Hardcore** | 0.5x | 0.6x | On | All | Brutal |
-| **Creative** | 5x | 3x | Off | None | Relaxed |
+|--------|---------|-------------|-----|---------------|-----------|
+| **Casual** | 2× | 2× | Off | None | Easy |
+| **Normal** | 1× | 1× | Off | All | Standard |
+| **Hardcore** | 0.5× | 0.6× | On | All | Brutal |
+| **Creative** | 5× | 3× | Off | None | Relaxed |
 
 ---
 
@@ -391,26 +419,62 @@ palforge/
 
 ---
 
+## FAQ
+
+**Q: Can I run multiple servers on one machine?**  
+A: Yes. Each server gets its own port and process. Create as many as your hardware can handle.
+
+**Q: Does PalForge auto-update the PalWorld server files?**  
+A: Click **Install / Update PalWorld Server** in the Install & Updates tab to fetch the latest version.
+
+**Q: Can I use my own SteamCMD installation?**  
+A: Yes. Set `STEAMCMD_DIR` in your `.env` to point to your existing SteamCMD folder.
+
+**Q: Does it work on ARM / Raspberry Pi?**  
+A: PalForge itself will run, but PalWorld dedicated server binaries are x86-64 only.
+
+**Q: How do I backup my server?**  
+A: Stop the server, then copy its folder from the `servers/` directory. Restore by placing the folder back.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Python 3.10+ · FastAPI · Uvicorn · WebSockets |
+| **Frontend** | Vanilla HTML5 · CSS3 · JavaScript (ES6) |
+| **Deployment** | Docker · Docker Compose · systemd · Nginx |
+| **Protocols** | REST API · WebSocket · SteamCMD |
+| **Platform** | Windows · Linux · macOS |
+
+---
+
 ## Contributing
 
-Contributions are welcome! Here's how to get started:
+Contributions of all kinds are welcome — bug reports, feature requests, UI improvements, and documentation fixes.
 
-1. Fork the repository
+1. **Fork** the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Commit: `git commit -m 'Add amazing feature'`
-5. Push to your fork and open a Pull Request
+3. **Commit** your changes: `git commit -m 'Add amazing feature'`
+4. **Push** to your fork and open a **Pull Request**
 
-Please ensure all code passes the existing tests and follows the project conventions.
+Please ensure your code follows the project conventions and passes any existing checks.
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute it for any purpose — personal or commercial.
 
 ---
 
 <p align="center">
-  <b>PalForge</b> &mdash; Forge your PalWorld server.
+  <a href="https://github.com/JamesCowx/palforge"><img src="static/palforge-logo.svg" alt="PalForge" width="240"></a>
+  <br><br>
+  <b>PalForge</b> — Forge your PalWorld server.
+  <br><br>
+  <sub>Built with ❤️ for the PalWorld community.</sub>
+  <br>
+  <sub>Not affiliated with Pocketpair, Inc.</sub>
 </p>
