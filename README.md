@@ -82,6 +82,142 @@ Then open **http://localhost:8080**.
 
 ---
 
+## Online Deployment (VPS / Cloud Server)
+
+Run PalForge on a cloud VM so your PalWorld server stays online 24/7.
+
+### Recommended VPS Specs
+
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| **CPU** | 4 cores | 6+ cores |
+| **RAM** | 8 GB | 16 GB |
+| **Disk** | 50 GB SSD | 100 GB SSD |
+| **OS** | Ubuntu 22.04 / Debian 12 | Ubuntu 24.04 |
+| **Bandwidth** | 1 Gbps unmetered | 1 Gbps unmetered |
+
+### Step-by-Step (Docker — Easiest)
+
+```bash
+# 1. SSH into your VPS
+ssh root@YOUR_VPS_IP
+
+# 2. Install Docker
+curl -fsSL https://get.docker.com | sh
+
+# 3. Clone PalForge
+git clone https://github.com/JamesCowx/palforge.git
+cd palforge
+
+# 4. Start it
+docker compose up -d
+
+# 5. Check it's running
+docker compose logs -f
+```
+
+Your web UI is now live at **http://YOUR_VPS_IP:8080**.
+
+### Firewall / Security Group
+
+Open these ports in your VPS firewall:
+
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| `8080` | TCP | PalForge web UI |
+| `8211` | UDP | PalWorld game server (per instance) |
+
+**Ubuntu (ufw):**
+```bash
+ufw allow 8080/tcp
+ufw allow 8211/udp
+ufw enable
+```
+
+**DigitalOcean / Vultr / Linode:** Add an inbound firewall rule via their web panel.
+
+### Step-by-Step (Manual — No Docker)
+
+```bash
+# 1. SSH into your VPS
+ssh root@YOUR_VPS_IP
+
+# 2. Install Python 3.10+ and pip
+apt update && apt install -y python3 python3-pip python3-venv git
+
+# 3. Clone and install
+git clone https://github.com/JamesCowx/palforge.git
+cd palforge
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+
+# 4. Run (stays alive via systemd — see below)
+python run.py
+```
+
+### Keep It Alive (systemd Service)
+
+Create `/etc/systemd/system/palforge.service`:
+
+```ini
+[Unit]
+Description=PalForge Web GUI
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/palforge
+ExecStart=/root/palforge/venv/bin/python run.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then enable and start:
+```bash
+systemctl daemon-reload
+systemctl enable palforge
+systemctl start palforge
+systemctl status palforge
+```
+
+### (Optional) Add SSL with Nginx + Let's Encrypt
+
+Create `/etc/nginx/sites-available/palforge`:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+ln -s /etc/nginx/sites-available/palforge /etc/nginx/sites-enabled/
+certbot --nginx -d your-domain.com
+nginx -t && systemctl reload nginx
+```
+
+> **Note:** The `proxy_set_header Upgrade` and `Connection` lines are required for WebSocket support (live console + install progress).
+
+---
+
 ## Usage
 
 1. **Install SteamCMD** &mdash; Navigate to the **Install &amp; Updates** tab and click **Install SteamCMD**. This is a one-time setup.
