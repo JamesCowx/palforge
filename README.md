@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="static/palforge-logo.svg" alt="PalForge" width="480">
+  <img src="https://raw.githubusercontent.com/JamesCowx/palforge/main/static/palforge-logo.svg" alt="PalForge" width="480">
 </p>
 
 <p align="center">
