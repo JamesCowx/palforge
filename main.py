@@ -16,6 +16,7 @@ from api.install import router as install_router
 from api.console import router as console_router
 from api.install_ws import router as install_ws_router
 from api.system import router as system_router
+from api.users import router as users_router
 
 logging.basicConfig(
     level=getattr(logging, os.getenv("LOG_LEVEL", "info").upper(), logging.INFO),
@@ -58,7 +59,10 @@ async def auth_middleware(request: Request, call_next):
         return await call_next(request)
 
     token = request.cookies.get("palforge_token")
-    if token and verify_token(token):
+    user = verify_token(token) if token else None
+    if user:
+        request.state.user_role = user["role"]
+        request.state.username = user["username"]
         return await call_next(request)
 
     if path.startswith("/api/"):
@@ -78,8 +82,9 @@ async def login(request: Request):
     if not check_credentials(username, password):
         return JSONResponse({"error": "invalid credentials"}, status_code=401)
 
+    user = check_credentials(username, password)
     token = make_token(username, password)
-    response = JSONResponse({"ok": True})
+    response = JSONResponse({"ok": True, "role": user["role"], "username": user["username"]})
     response.set_cookie("palforge_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
     return response
 
@@ -96,6 +101,7 @@ app.include_router(install_router)
 app.include_router(console_router)
 app.include_router(install_ws_router)
 app.include_router(system_router)
+app.include_router(users_router)
 
 
 @app.get("/health")
