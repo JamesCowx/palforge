@@ -1,6 +1,9 @@
 import asyncio
 import os
 import platform
+import logging
+
+logger = logging.getLogger("palforge")
 
 STEAMCMD_URLS = {
     "Windows": "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
@@ -91,23 +94,13 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
     sdir = get_steamcmd_dir()
     os.makedirs(install_dir, exist_ok=True)
 
-    if platform.system() == "Windows":
-        cmd_path = get_steamcmd_path()
-        args = [
-            cmd_path,
-            "+force_install_dir", install_dir,
-            "+login", "anonymous",
-            "+app_update", PALWORLD_APP_ID, "validate",
-            "+quit",
-        ]
-    else:
-        args = [
-            get_steamcmd_path(),
-            "+force_install_dir", install_dir,
-            "+login", "anonymous",
-            "+app_update", PALWORLD_APP_ID, "validate",
-            "+quit",
-        ]
+    args = [
+        get_steamcmd_path(),
+        "+force_install_dir", install_dir,
+        "+login", "anonymous",
+        "+app_update", PALWORLD_APP_ID, "validate",
+        "+quit",
+    ]
 
     process = await asyncio.create_subprocess_exec(
         *args,
@@ -116,13 +109,22 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
         cwd=sdir,
     )
 
+    output_lines = []
     async for line in process.stdout:
         text = line.decode(errors="replace").strip()
+        output_lines.append(text)
         if on_progress:
             await on_progress(text)
 
     await process.wait()
-    return process.returncode == 0
+
+    if process.returncode != 0:
+        # Log the last 10 lines of output for debugging
+        tail = output_lines[-10:] if len(output_lines) > 10 else output_lines
+        logger.error("SteamCMD failed (code %s): %s", process.returncode, " | ".join(tail))
+        return False
+
+    return True
 
 
 async def update_palworld_server(install_dir: str, on_progress=None) -> bool:

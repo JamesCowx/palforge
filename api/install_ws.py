@@ -19,13 +19,13 @@ async def install_websocket(websocket: WebSocket, server_id: str):
 
     try:
         if not await is_steamcmd_installed():
-            await websocket.send_text("SteamCMD not found. Installing SteamCMD...")
+            await websocket.send_text("Installing SteamCMD first...")
             ok = await install_steamcmd()
             if not ok:
-                await websocket.send_text("ERROR: Failed to install SteamCMD")
+                await websocket.send_text("ERROR: Failed to install SteamCMD. Make sure 32-bit libs are installed (apt install lib32gcc-s1 lib32stdc++6)")
                 await websocket.close(code=1011, reason="SteamCMD installation failed")
                 return
-            await websocket.send_text("SteamCMD installed successfully.")
+            await websocket.send_text("SteamCMD installed.")
 
         async def progress(line: str):
             try:
