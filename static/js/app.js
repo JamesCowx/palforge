@@ -230,7 +230,11 @@ function renderSettings(settings,filter=''){
 function renderField(key,value){
   const label=key.replace(/([A-Z])/g,' $1').replace(/^b([A-Z])/,'$1').replace(/^./,s=>s.toUpperCase()).trim();
   if(typeof value==='boolean')return'<div class="setting-field"><span class="setting-field-label">'+label+'</span><label class="toggle-switch"><input type="checkbox" data-key="'+key+'" data-type="bool" '+ (value?'checked':'')+'><span class="toggle-slider"></span></label></div>';
-  if(typeof value==='number')return'<div class="setting-field"><span class="setting-field-label">'+label+'</span><input type="number" class="setting-field-input" data-key="'+key+'" data-type="number" value="'+value+'" step="'+(Number.isInteger(value)?'1':'any')+'"></div>';
+  if(typeof value==='number'){
+    var step=Number.isInteger(value)?'1':'any';
+    var isFloat=!Number.isInteger(value);
+    return'<div class="setting-field"><span class="setting-field-label">'+label+'</span><div class="setting-field-value"><input type="number" class="setting-field-input" data-key="'+key+'" data-type="number" value="'+value+'" step="'+step+'"><div class="setting-field-stepper"><button class="setting-field-step" data-dir="up" data-target="'+key+'">&#9650;</button><button class="setting-field-step" data-dir="down" data-target="'+key+'">&#9660;</button></div></div></div>';
+  }
   return'<div class="setting-field"><span class="setting-field-label">'+label+'</span><input type="text" class="setting-field-input" data-key="'+key+'" data-type="string" value="'+esc(String(value||''))+'"></div>'
 }
 async function saveSettings(){
@@ -418,6 +422,18 @@ on('console-input','keydown',e=>{if(e.key==='Enter')sendCommand()});
 
 // delegated clicks
 document.addEventListener('click',e=>{
+  var step=e.target.closest('.setting-field-step');
+  if(step){
+    var inp=document.querySelector('[data-key="'+step.dataset.target+'"]');
+    if(inp){
+      var stepVal=parseFloat(inp.step)||1;
+      var val=parseFloat(inp.value)||0;
+      if(step.dataset.dir==='up')val+=stepVal;else val-=stepVal;
+      inp.value=Number.isInteger(parseFloat(inp.step))?Math.round(val):parseFloat(val.toFixed(3));
+      inp.dispatchEvent(new Event('input',{bubbles:true}))
+    }
+    return
+  }
   var card=e.target.closest('.preset-card');
   if(card){applyPreset(card.dataset.preset);return}
   if(e.target.classList.contains('tab')){
