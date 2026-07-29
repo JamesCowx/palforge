@@ -2,7 +2,7 @@ import json
 import os
 import asyncio
 
-USERS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "users.json")
+USERS_FILE = os.path.join(os.environ.get("DATA_DIR", os.path.dirname(os.path.dirname(__file__))), "users.json")
 _lock = asyncio.Lock()
 
 DEFAULT_USERS = [{"username": "Admin", "password": "Chloe", "role": "admin"}]

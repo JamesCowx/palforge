@@ -8,11 +8,11 @@ services:
     volumes:
       - ./servers:/app/servers
       - ./steamcmd:/app/steamcmd
-      - ./servers.json:/app/servers.json
-      - ./users.json:/app/users.json
+      - ./data:/app/data
     environment:
       - HOST=0.0.0.0
       - PORT=8080
       - SERVER_DATA_DIR=/app/servers
       - STEAMCMD_DIR=/app/steamcmd
+      - DATA_DIR=/app/data
     restart: unless-stopped

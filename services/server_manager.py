@@ -11,7 +11,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from services.config_manager import DEFAULT_PALWORLD_SETTINGS, get_default_settings, read_config, write_config
 
-SERVERS_DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "servers.json")
+SERVERS_DATA_FILE = os.path.join(os.environ.get("DATA_DIR", os.path.dirname(os.path.dirname(__file__))), "servers.json")
 _save_lock = asyncio.Lock()
 
 
