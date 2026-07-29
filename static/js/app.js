@@ -193,10 +193,12 @@ async function loadPresets(){
     var grid=$('#preset-cards');
     if(grid)grid.innerHTML=Object.entries(p).map(([k,v])=>{
       var keyStats=[];
-      if(v.settings.ExpRate)keyStats.push((v.settings.ExpRate*100)+'% XP');
-      if(v.settings.PalCaptureRate)keyStats.push((v.settings.PalCaptureRate*100)+'% Capture');
-      if(v.settings.PalEggDefaultHatchingTime!==undefined)keyStats.push(v.settings.PalEggDefaultHatchingTime===0?'Instant Eggs':v.settings.PalEggDefaultHatchingTime+'h Eggs');
-      return '<div class="preset-card" data-preset="'+k+'" role="button" tabindex="0"><div class="preset-card-icon">'+v.icon+'</div><div class="preset-card-label">'+v.label+'</div><div class="preset-card-desc">'+v.description+'</div><div class="preset-card-stats">'+keyStats.join(' \u00B7 ')+'</div></div>';
+    var stats=[];
+    if(v.settings.ExpRate)stats.push((v.settings.ExpRate*100)+'% XP');
+    if(v.settings.PalCaptureRate)stats.push((v.settings.PalCaptureRate*100)+'% Capture');
+    if(v.settings.PalEggDefaultHatchingTime!==undefined)stats.push(v.settings.PalEggDefaultHatchingTime===0?'Instant Eggs':v.settings.PalEggDefaultHatchingTime+'h Eggs');
+    if(v.settings.DeathPenalty)stats.push(v.settings.DeathPenalty==='None'?'No Drop':'Drop Items');
+    return '<div class="preset-card" data-preset="'+k+'" role="button" tabindex="0"><div class="preset-card-icon">'+v.icon+'</div><div class="preset-card-label">'+v.label+'</div><div class="preset-card-desc">'+v.description+'</div><div class="preset-card-stats">'+stats.map(s=>'<span>'+s+'</span>').join('')+'</div></div>';
     }).join('')
   }catch(e){}
 }
@@ -214,8 +216,13 @@ function renderSettings(settings,filter=''){
   let html='';
   for(const cat of Object.keys(CATS)){
     if(!grouped[cat]?.length)continue;
-    html+='<div class="settings-category"><div class="settings-category-title">'+cat+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px">';
+    html+='<div class="settings-category"><div class="settings-category-title">'+cat+'</div><div class="settings-section-card">';
     grouped[cat].forEach(([k,v])=>{html+=renderField(k,v)});
+    html+='</div></div>'
+  }
+  if(grouped['Other']?.length){
+    html+='<div class="settings-category"><div class="settings-category-title">Other</div><div class="settings-section-card">';
+    grouped['Other'].forEach(([k,v])=>{html+=renderField(k,v)});
     html+='</div></div>'
   }
   $('#settings-container').innerHTML=html||'<div style="text-align:center;padding:40px;color:var(--text-muted)">No matches</div>'
