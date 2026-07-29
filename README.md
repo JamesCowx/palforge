@@ -131,6 +131,31 @@ Run PalForge on a cloud VM so your PalWorld server stays online 24/7.
 | **OS** | Ubuntu 22.04 / Debian 12 | Ubuntu 24.04 |
 | **Bandwidth** | 1 Gbps | 1 Gbps unmetered |
 
+### Google Cloud (One-Click Deploy)
+
+```bash
+# Create instance in Toronto
+gcloud compute instances create palforge \
+    --zone=northamerica-northeast2-a \
+    --machine-type=n2-standard-4 \
+    --boot-disk-size=50GB \
+    --boot-disk-type=pd-ssd \
+    --image-project=ubuntu-os-cloud \
+    --image-family=ubuntu-2404-lts-amd64 \
+    --tags=palforge
+
+# Open ports
+gcloud compute firewall-rules create palforge-web \
+    --allow=tcp:8080 --target-tags=palforge
+gcloud compute firewall-rules create palforge-game \
+    --allow=udp:8211 --target-tags=palforge
+
+# SSH in
+gcloud compute ssh palforge
+```
+
+> **Instance cost:** ~$100/mo for n2-standard-4 (4 vCPU, 16 GB). Run `gcloud compute instances describe palforge` to find your public IP.
+
 ### Docker Deploy (Easiest)
 
 ```bash
