@@ -315,11 +315,11 @@ class ServerManager:
             return []
         return list(server.log_lines)
 
-    def mark_installed(self, server_id: str) -> None:
+    async def mark_installed(self, server_id: str) -> None:
         server = self._servers.get(server_id)
         if server:
             server.installed = True
-            self._save()
+            await self._save()
 
 
 server_manager = ServerManager()

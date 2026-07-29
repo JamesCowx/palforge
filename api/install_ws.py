@@ -38,7 +38,7 @@ async def install_websocket(websocket: WebSocket, server_id: str):
         ok = await install_palworld_server(server.install_dir, on_progress=progress)
 
         if ok:
-            server_manager.mark_installed(server_id)
+            await server_manager.mark_installed(server_id)
             await websocket.send_text("__COMPLETE__: Installation successful")
         else:
             await websocket.send_text("ERROR: Installation failed")

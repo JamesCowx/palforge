@@ -34,7 +34,7 @@ async def install_server(server_id: str):
 
     ok = await install_palworld_server(server.install_dir)
     if ok:
-        server_manager.mark_installed(server_id)
+        await server_manager.mark_installed(server_id)
     return {"ok": ok}
 
 
