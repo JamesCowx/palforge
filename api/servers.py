@@ -133,3 +133,22 @@ async def send_command(server_id: str, req: SendCommandRequest):
     if not ok:
         raise HTTPException(status_code=400, detail="Cannot send command")
     return {"ok": True}
+
+
+class KickPlayerRequest(BaseModel):
+    steam_id: str
+    reason: str = ""
+
+
+@router.get("/{server_id}/players")
+async def get_players(server_id: str):
+    players = await server_manager.show_players(server_id)
+    return {"players": players}
+
+
+@router.post("/{server_id}/players/kick")
+async def kick_player(server_id: str, req: KickPlayerRequest):
+    ok = await server_manager.kick_player(server_id, req.steam_id, req.reason)
+    if not ok:
+        raise HTTPException(status_code=400, detail="Cannot kick player")
+    return {"ok": True}

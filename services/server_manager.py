@@ -27,6 +27,7 @@ class ServerInstance:
     uptime_start: Optional[float] = None
     player_count: int = 0
     max_players_seen: int = 0
+    connected_players: List[str] = field(default_factory=list)
     process: Any = None
     log_lines: List[str] = field(default_factory=list)
     log_callback: Optional[Callable] = None
@@ -269,18 +270,64 @@ class ServerManager:
         except Exception:
             return False
 
+    async def show_players(self, server_id: str) -> list:
+        server = self._servers.get(server_id)
+        if not server or not server.process or server.status != "running":
+            return []
+        try:
+            server.process.stdin.write(b"ShowPlayers\n")
+            await server.process.stdin.drain()
+            await asyncio.sleep(0.5)
+        except Exception:
+            pass
+        return server.connected_players
+
+    async def kick_player(self, server_id: str, steam_id: str, reason: str = "") -> bool:
+        server = self._servers.get(server_id)
+        if not server or not server.process or server.status != "running":
+            return False
+        try:
+            cmd = f"KickPlayer {steam_id}"
+            if reason:
+                cmd += f" {reason}"
+            cmd += "\n"
+            server.process.stdin.write(cmd.encode())
+            await server.process.stdin.drain()
+            return True
+        except Exception:
+            return False
+
     _PLAYER_JOIN_RE = re.compile(r"(?:player|user)\s+(?:join|connect|login)|NumPlayer.*?:\s*(\d+)", re.IGNORECASE)
     _PLAYER_LEAVE_RE = re.compile(r"(?:player|user)\s+(?:leave|disconnect|quit|logout)", re.IGNORECASE)
     _PLAYER_COUNT_RE = re.compile(r"NumPlayer[^:]*:\s*(\d+)", re.IGNORECASE)
+    _SHOWPLAYERS_HEADER_RE = re.compile(r"name,playeruid,steamid", re.IGNORECASE)
+    _PLAYER_ENTRY_RE = re.compile(r"^([^,]+),(\d+),(\d{17})")
 
     async def _read_output(self, server: ServerInstance):
         if not server.process or not server.process.stdout:
             return
+        parsing_players = False
+        parsed_players = []
         async for line in server.process.stdout:
             text = line.decode(errors="replace").rstrip()
             server.log_lines.append(text)
             if len(server.log_lines) > 800:
                 server.log_lines = server.log_lines[-800:]
+
+            # Parse ShowPlayers output
+            if parsing_players:
+                m = self._PLAYER_ENTRY_RE.match(text)
+                if m:
+                    parsed_players.append({"name": m.group(1), "player_uid": m.group(2), "steam_id": m.group(3)})
+                    continue
+                else:
+                    server.connected_players = parsed_players
+                    parsing_players = False
+                    parsed_players = []
+            if self._SHOWPLAYERS_HEADER_RE.match(text):
+                parsing_players = True
+                parsed_players = []
+                continue
 
             match_count = self._PLAYER_COUNT_RE.search(text)
             if match_count:

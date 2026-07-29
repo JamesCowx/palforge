@@ -312,6 +312,26 @@ async function updateConnectionInfo(){
   try{const net=await get('/api/system/network');const port=(S.servers.find(x=>x.id===S.activeId)||{}).port||8211;$('#conn-lan').textContent=net.local_ip+':'+port;$('#conn-wan').textContent=net.public_ip+':'+port}catch(e){}
 }
 
+// ─── players ───
+async function refreshPlayers(){
+  if(!S.activeId)return;
+  var el=$('#players-list');if(!el)return;
+  el.innerHTML='<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:20px">Scanning...</div>';
+  try{
+    await post('/api/servers/'+S.activeId+'/command',{command:'ShowPlayers'});
+    await new Promise(r=>setTimeout(r,1500));
+    var d=await get('/api/servers/'+S.activeId+'/players');
+    if(!d.players||!d.players.length){el.innerHTML='<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:20px">No players connected</div>';return}
+    el.innerHTML=d.players.map(p=>'<div class="player-row"><div class="player-info"><span class="player-name">'+esc(p.name)+'</span><span class="player-id">'+p.steam_id+'</span></div><button class="btn btn-outline-danger btn-sm" data-kick="'+p.steam_id+'" data-player="'+esc(p.name)+'">Kick</button></div>').join('')
+  }catch(e){el.innerHTML='<div style="text-align:center;color:var(--rose);font-size:12px;padding:20px">Failed to scan</div>'}
+}
+async function kickPlayer(steamId,playerName){
+  var reason='';
+  var ok=await showModal('Kick '+playerName,'<p>Kick <strong>'+esc(playerName)+'</strong> from the server?</p><div class="modal-body-field" style="margin-top:14px"><label for="modal-kick-reason">Reason (optional)</label><input type="text" id="modal-kick-reason" placeholder="Enter reason..."></div>','Kick','btn-danger',()=>{reason=$('#modal-kick-reason')?.value||''});
+  if(!ok)return;
+  try{await post('/api/servers/'+S.activeId+'/players/kick',{steam_id:steamId,reason:reason});toast('Kicked '+playerName,'success');refreshPlayers()}catch(e){toast('Failed to kick','error')}
+}
+
 // ─── users ───
 async function loadUsers(){
   try{const users=await get('/api/users');const el=$('#users-list-section');if(!el)return;
@@ -321,13 +341,13 @@ async function loadUsers(){
 
 // ─── modal ───
 let _modalResolve=null;
-function showModal(title,html,confirmText='Confirm',confirmClass='btn-primary'){
+function showModal(title,html,confirmText='Confirm',confirmClass='btn-primary',onConfirm=null){
   return new Promise(resolve=>{
     const overlay=$('#modal-overlay');if(!overlay)return resolve(false);
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
     $('#modal-title').textContent=title;$('#modal-body').innerHTML=html;overlay.style.display='flex';
     const cfm=$('#modal-confirm');cfm.className='btn '+confirmClass;cfm.textContent=confirmText;cfm.focus();
-    cfm.onclick=()=>{overlay.style.display='none';resolve(true)};
+    cfm.onclick=()=>{if(onConfirm)onConfirm();overlay.style.display='none';resolve(true)};
     $('#modal-cancel').onclick=()=>{overlay.style.display='none';resolve(false)};
     overlay.onclick=e=>{if(e.target===overlay){overlay.style.display='none';resolve(false)}};
     const onEsc=e=>{if(e.key==='Escape'){overlay.style.display='none';resolve(false);document.removeEventListener('keydown',onEsc)}};
@@ -408,6 +428,7 @@ on('btn-login','click',doLogin);
 on('btn-back-landing','click',()=>showPage('landing'));
 on('btn-logout','click',doLogout);
 on('btn-new-user','click',showAddUserModal);
+on('btn-refresh-players','click',refreshPlayers);
 on('btn-new-server','click',showNewServerModal);
 on('btn-empty-create','click',showNewServerModal);
 on('btn-rename','click',showRenameModal);
@@ -454,6 +475,7 @@ document.addEventListener('click',e=>{
   if(btn.classList.contains('conn-copy')){const el=document.getElementById(btn.dataset.target);if(el)navigator.clipboard.writeText(el.textContent).then(()=>toast('Copied','success'))}
   if(btn.dataset.edit)showEditUserModal(btn.dataset.edit);
   if(btn.dataset.delete)deleteUserModal(btn.dataset.delete);
+  if(btn.dataset.kick)kickPlayer(btn.dataset.kick,btn.dataset.player||'Player');
 });
 $('#server-list').addEventListener('click',e=>{const li=e.target.closest('li[data-id]');if(li)selectServer(li.dataset.id)});
 
