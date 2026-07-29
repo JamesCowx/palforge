@@ -109,12 +109,14 @@ async function poll(){updateSystemInfo();updateConnectionInfo();if(S.view==='ser
 
 // ─── servers ───
 let _loading=false;
+let _lastServerHash='';
 async function loadServers(){
   if(_loading)return;
   _loading=true;
   try{S.servers=await get('/api/servers')}catch(e){_loading=false;return}
   _loading=false;
-  if(S.view==='servers')renderServerList();
+  var hash=S.servers.map(s=>s.id+':'+s.status+':'+s.name).join('|');
+  if(hash!==_lastServerHash){_lastServerHash=hash;renderServerList()}
   if(S.activeId){
     const s=S.servers.find(x=>x.id===S.activeId);
     if(s)refreshServerView(s);else{S.activeId=null;showEmptyState()}
@@ -128,7 +130,7 @@ function renderServerList(){
   list.innerHTML=shown.map(s=>'<li class="'+(s.id===S.activeId?'active':'')+'" data-id="'+s.id+'" tabindex="0"><div class="server-list-info"><div class="server-list-icon">&#9830;</div><div><div class="server-list-name">'+esc(s.name)+'</div><div class="server-list-port">:'+s.port+' \u00B7 '+(s.uptime_seconds>0?fmtUptime(s.uptime_seconds):'offline')+'</div></div></div><span class="server-list-status '+s.status+'">'+s.status+'</span></li>').join('')
 }
 function selectServer(id){
-  S.activeId=id;
+  S.activeId=id;_lastServerHash='';
   const s=S.servers.find(x=>x.id===id);if(!s)return;
   renderServerList();
   showServerView(s);
@@ -137,6 +139,7 @@ function selectServer(id){
   if(s.status==='running')startUptimeTick(s)
 }
 function showEmptyState(){
+  _lastServerHash='';
   document.getElementById('empty-state').classList.remove('hidden');
   $('#server-view').classList.remove('visible');
   if(S.consoleWs){S.consoleWs.close();S.consoleWs=null}

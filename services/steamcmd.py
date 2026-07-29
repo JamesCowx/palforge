@@ -94,7 +94,6 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
     sdir = get_steamcmd_dir()
     os.makedirs(install_dir, exist_ok=True)
 
-    # First update SteamCMD itself
     if platform.system() != "Windows":
         init_proc = await asyncio.create_subprocess_exec(
             get_steamcmd_path(), "+quit",
@@ -110,28 +109,36 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
         "+quit",
     ]
 
-    process = await asyncio.create_subprocess_exec(
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT,
-        cwd=sdir,
-    )
+    for attempt in range(3):
+        process = await asyncio.create_subprocess_exec(
+            *args,
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, cwd=sdir,
+        )
 
-    output_lines = []
-    async for line in process.stdout:
-        text = line.decode(errors="replace").strip()
-        output_lines.append(text)
-        if on_progress:
-            await on_progress(text)
+        output_lines = []
+        async for line in process.stdout:
+            text = line.decode(errors="replace").strip()
+            output_lines.append(text)
+            if on_progress:
+                await on_progress(text)
 
-    await process.wait()
+        await process.wait()
 
-    if process.returncode != 0:
+        if process.returncode == 0:
+            return True
+
+        combined = " ".join(output_lines)
+        if "Missing configuration" in combined:
+            if on_progress:
+                await on_progress(f"Retrying in 5s (attempt {attempt+2}/3)...")
+            await asyncio.sleep(5)
+            continue
+
         tail = output_lines[-10:] if len(output_lines) > 10 else output_lines
         logger.error("SteamCMD failed (code %s): %s", process.returncode, " | ".join(tail))
         return False
 
-    return True
+    return False
 
 
 async def update_palworld_server(install_dir: str, on_progress=None) -> bool:
