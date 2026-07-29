@@ -152,7 +152,9 @@ function refreshServerView(s){
   $('#server-subtitle').textContent='Port '+s.port+' \u00B7 ID '+s.id;
   $('#server-status').textContent=s.status;
   $('#server-status').className='status-badge status-'+s.status;
-  $('#btn-start').disabled=s.status!=='stopped'||!s.installed;
+  var needInstall=!s.installed;
+  $('#btn-start').disabled=s.status!=='stopped'||needInstall;
+  $('#btn-start').textContent=needInstall?'\u25B6 Install First':'\u25B6 Start';
   $('#btn-stop').disabled=s.status!=='running';
   $('#btn-restart').disabled=s.status!=='running';
   const cols={running:'var(--emerald)',stopped:'var(--rose)',starting:'var(--blue)',stopping:'var(--blue)'};
