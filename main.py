@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from services.auth import make_token, verify_token, check_password
+from services.auth import make_token, verify_token, check_credentials
 from api.servers import router as servers_router
 from api.install import router as install_router
 from api.console import router as console_router
@@ -70,14 +70,15 @@ async def auth_middleware(request: Request, call_next):
 async def login(request: Request):
     try:
         body = await request.json()
+        username = body.get("username", "")
         password = body.get("password", "")
     except Exception:
         return JSONResponse({"error": "invalid request"}, status_code=400)
 
-    if not check_password(password):
-        return JSONResponse({"error": "wrong password"}, status_code=401)
+    if not check_credentials(username, password):
+        return JSONResponse({"error": "invalid credentials"}, status_code=401)
 
-    token = make_token(password)
+    token = make_token(username, password)
     response = JSONResponse({"ok": True})
     response.set_cookie("palforge_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
     return response

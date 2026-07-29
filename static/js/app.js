@@ -47,8 +47,10 @@ function showLanding() {
     if (state.uptimeInterval) { clearInterval(state.uptimeInterval); }
     $('#landing').style.display = 'flex';
     $('#app').style.display = 'none';
-    document.getElementById('login-password').value = '';
-    document.getElementById('login-password').focus();
+    const u = document.getElementById('login-username');
+    const p = document.getElementById('login-password');
+    if (u) u.value = ''; if (p) p.value = '';
+    if (u) u.focus();
 }
 
 function showApp() {
@@ -59,7 +61,7 @@ function showApp() {
 
 async function tryAutoLogin() {
     try {
-        const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: '' }), credentials: 'same-origin' });
+        const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: '', password: '' }), credentials: 'same-origin' });
         const d = await r.json().catch(() => ({}));
         if (d.ok) { showApp(); loadAll(); return; }
     } catch (e) {}
@@ -67,17 +69,19 @@ async function tryAutoLogin() {
 }
 
 async function doLogin() {
+    const username = document.getElementById('login-username').value.trim();
     const pw = document.getElementById('login-password').value;
     const err = document.getElementById('login-error');
     const btn = document.getElementById('btn-login');
+    if (!username) { err.textContent = 'Enter a username'; return; }
     if (!pw) { err.textContent = 'Enter a password'; return; }
     btn.disabled = true; btn.textContent = '...'; err.textContent = '';
     try {
-        const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw }), credentials: 'same-origin' });
+        const r = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password: pw }), credentials: 'same-origin' });
         const d = await r.json().catch(() => ({}));
-        if (d.ok) { showApp(); loadAll(); } else { err.textContent = d.error || 'Wrong password'; }
+        if (d.ok) { showApp(); loadAll(); } else { err.textContent = d.error || 'Invalid credentials'; }
     } catch (e) { err.textContent = 'Connection failed'; }
-    btn.disabled = false; btn.textContent = 'Unlock';
+    btn.disabled = false; btn.textContent = 'Sign In';
 }
 
 async function doLogout() {
@@ -423,7 +427,7 @@ document.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && e.target.id === 'login-password') doLogin();
+    if (e.key === 'Enter' && (e.target.id === 'login-username' || e.target.id === 'login-password')) doLogin();
     if (e.ctrlKey || e.metaKey) return;
     if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); showNewServerModal(); }

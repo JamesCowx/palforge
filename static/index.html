@@ -25,10 +25,11 @@
             <h1 class="landing-title">PalForge</h1>
             <p class="landing-sub">Server Manager</p>
             <div class="landing-login">
-                <label for="login-password" class="login-label">Enter password to continue</label>
+                <label for="login-username" class="login-label">Sign in to continue</label>
+                <input type="text" id="login-username" class="login-input" placeholder="Username" autofocus style="margin-bottom:8px" autocomplete="username">
                 <div class="login-row">
-                    <input type="password" id="login-password" class="login-input" placeholder="••••••••" autofocus>
-                    <button id="btn-login" class="btn btn-primary">Unlock</button>
+                    <input type="password" id="login-password" class="login-input" placeholder="Password" autocomplete="current-password">
+                    <button id="btn-login" class="btn btn-primary">Sign In</button>
                 </div>
                 <p id="login-error" class="login-error"></p>
             </div>
