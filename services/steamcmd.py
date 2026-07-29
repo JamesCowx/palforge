@@ -94,6 +94,14 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
     sdir = get_steamcmd_dir()
     os.makedirs(install_dir, exist_ok=True)
 
+    # First update SteamCMD itself
+    if platform.system() != "Windows":
+        init_proc = await asyncio.create_subprocess_exec(
+            get_steamcmd_path(), "+quit",
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, cwd=sdir,
+        )
+        await init_proc.communicate()
+
     args = [
         get_steamcmd_path(),
         "+force_install_dir", install_dir,
@@ -119,7 +127,6 @@ async def install_palworld_server(install_dir: str, on_progress=None) -> bool:
     await process.wait()
 
     if process.returncode != 0:
-        # Log the last 10 lines of output for debugging
         tail = output_lines[-10:] if len(output_lines) > 10 else output_lines
         logger.error("SteamCMD failed (code %s): %s", process.returncode, " | ".join(tail))
         return False

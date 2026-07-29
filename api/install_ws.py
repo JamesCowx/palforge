@@ -33,7 +33,8 @@ async def install_websocket(websocket: WebSocket, server_id: str):
             except WebSocketDisconnect:
                 pass
 
-        await websocket.send_text("Installing PalWorld server...")
+        await websocket.send_text("Updating SteamCMD...")
+        await websocket.send_text("Downloading PalWorld server (~20 GB)...")
         ok = await install_palworld_server(server.install_dir, on_progress=progress)
 
         if ok:
