@@ -2,13 +2,15 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 load_dotenv()
 
+from services.auth import make_token, verify_token, check_password
 from api.servers import router as servers_router
 from api.install import router as install_router
 from api.console import router as console_router
@@ -43,6 +45,50 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    public_paths = ("/health", "/css/", "/js/", "/palforge-", "/favicon")
+    path = request.url.path
+    if path.startswith(public_paths) or path in ("/", "/index.html"):
+        return await call_next(request)
+
+    if path == "/api/auth/login" or path.startswith("/api/auth"):
+        return await call_next(request)
+
+    token = request.cookies.get("palforge_token")
+    if token and verify_token(token):
+        return await call_next(request)
+
+    if path.startswith("/api/"):
+        return JSONResponse({"error": "unauthorized"}, status_code=401)
+    return JSONResponse({"error": "unauthorized"}, status_code=401)
+
+
+@app.post("/api/auth/login")
+async def login(request: Request):
+    try:
+        body = await request.json()
+        password = body.get("password", "")
+    except Exception:
+        return JSONResponse({"error": "invalid request"}, status_code=400)
+
+    if not check_password(password):
+        return JSONResponse({"error": "wrong password"}, status_code=401)
+
+    token = make_token(password)
+    response = JSONResponse({"ok": True})
+    response.set_cookie("palforge_token", token, httponly=True, samesite="lax", max_age=86400 * 7)
+    return response
+
+
+@app.post("/api/auth/logout")
+async def logout():
+    response = JSONResponse({"ok": True})
+    response.delete_cookie("palforge_token")
+    return response
+
 
 app.include_router(servers_router)
 app.include_router(install_router)
