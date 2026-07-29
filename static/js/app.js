@@ -162,9 +162,9 @@ function refreshServerView(s){
   const cols={running:'var(--emerald)',stopped:'var(--rose)',starting:'var(--blue)',stopping:'var(--blue)'};
   $('#ov-status').textContent=s.status.charAt(0).toUpperCase()+s.status.slice(1);
   $('#ov-status').style.color=cols[s.status]||'var(--text)';
-  $('#ov-uptime').textContent=s.status==='running'?fmtUptime(s.uptime_seconds):'--';
+  $('#ov-uptime').textContent=s.status==='running'?fmtUptime(0):'--';
   $('#ov-players').textContent=(s.player_count||0)+' / '+(s.settings?.ServerPlayerMaxNum||32);
-  $('#ov-memory').textContent=s.memory_mb>0?s.memory_mb.toFixed(0)+' MB':'--';
+  $('#ov-memory').textContent=(s.memory_mb||0)>0?s.memory_mb.toFixed(0)+' MB':'--';
   $('#info-id').textContent=s.id;$('#info-port').textContent=s.port;
   $('#info-maxplayers').textContent=s.settings?.ServerPlayerMaxNum||32;
   $('#info-path').textContent=s.install_dir
@@ -462,10 +462,20 @@ const makeAction=(action)=>{
   const btn=$('#btn-'+action);if(!btn)return;
   btn.addEventListener('click',async()=>{
     btn.disabled=true;const orig=btn.textContent;btn.innerHTML='<span class="btn-working">&#9679;</span> Working...';
-    try{await post('/api/servers/'+S.activeId+'/'+action);toast(action==='start'?'Starting...':action==='stop'?'Stopped':'Restarting...','success')}catch(e){toast('Failed','error')}
+    try{
+      await post('/api/servers/'+S.activeId+'/'+action);
+      toast(action==='start'?'Starting...':action==='stop'?'Stopped':'Restarting...','success');
+      // Update local state immediately so UI reflects new status
+      var sv=S.servers.find(x=>x.id===S.activeId);
+      if(sv){
+        if(action==='start'){sv.status='running';sv.uptime_seconds=0}
+        else if(action==='stop'){sv.status='stopped';sv.uptime_seconds=0;sv.player_count=0}
+        else if(action==='restart'){sv.status='running';sv.uptime_seconds=0;sv.player_count=0}
+      }
+    }catch(e){toast('Failed','error')}
     await loadServers();
-    const sv=S.servers.find(x=>x.id===S.activeId);
-    if(sv){refreshServerView(sv);if(sv.status==='running'){startUptimeTick(sv);connectConsole(S.activeId)}}
+    var sv2=S.servers.find(x=>x.id===S.activeId);
+    if(sv2){refreshServerView(sv2);if(sv2.status==='running'){startUptimeTick(sv2);connectConsole(S.activeId)}}
     btn.disabled=false;btn.textContent=orig
   })
 };
