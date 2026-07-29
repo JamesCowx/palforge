@@ -89,7 +89,7 @@ class ServerManager:
         self._load()
 
     def _load(self):
-        if os.path.exists(SERVERS_DATA_FILE):
+        if os.path.exists(SERVERS_DATA_FILE) and os.path.isfile(SERVERS_DATA_FILE):
             try:
                 with open(SERVERS_DATA_FILE, "r", encoding="utf-8") as f:
                     data = json.load(f)
@@ -115,7 +115,11 @@ class ServerManager:
             tmp = SERVERS_DATA_FILE + ".tmp"
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2)
-            os.replace(tmp, SERVERS_DATA_FILE)
+            try:
+                os.replace(tmp, SERVERS_DATA_FILE)
+            except OSError:
+                import shutil
+                shutil.move(tmp, SERVERS_DATA_FILE)
 
     def list_servers(self) -> List[ServerInstance]:
         return list(self._servers.values())

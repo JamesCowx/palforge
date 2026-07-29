@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
@@ -5,6 +6,7 @@ from typing import Any, Dict, Optional
 from services.server_manager import server_manager
 from services.config_manager import get_default_settings, get_presets
 
+logger = logging.getLogger("palforge")
 router = APIRouter(prefix="/api/servers", tags=["servers"])
 
 
@@ -32,8 +34,12 @@ def list_servers():
 
 @router.post("")
 async def create_server(req: CreateServerRequest):
-    server = await server_manager.create_server(req.name, req.port)
-    return server.to_dict()
+    try:
+        server = await server_manager.create_server(req.name, req.port)
+        return server.to_dict()
+    except Exception as e:
+        logger.exception("Failed to create server")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{server_id}")
@@ -104,10 +110,16 @@ def get_settings(server_id: str):
 
 @router.put("/{server_id}/settings")
 async def update_settings(server_id: str, req: UpdateSettingsRequest):
-    ok = await server_manager.update_settings(server_id, req.settings)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Server not found")
-    return {"ok": True}
+    try:
+        ok = await server_manager.update_settings(server_id, req.settings)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Server not found")
+        return {"ok": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to update settings")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{server_id}/logs")

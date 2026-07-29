@@ -9,6 +9,7 @@ services:
       - ./servers:/app/servers
       - ./steamcmd:/app/steamcmd
       - ./servers.json:/app/servers.json
+      - ./users.json:/app/users.json
     environment:
       - HOST=0.0.0.0
       - PORT=8080

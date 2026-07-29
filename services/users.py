@@ -9,12 +9,12 @@ DEFAULT_USERS = [{"username": "Admin", "password": "Chloe", "role": "admin"}]
 
 
 def _load():
-    if os.path.exists(USERS_FILE):
+    if os.path.exists(USERS_FILE) and os.path.isfile(USERS_FILE):
         try:
             with open(USERS_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, OSError):
-            return list(DEFAULT_USERS)
+            pass
     return list(DEFAULT_USERS)
 
 
@@ -23,7 +23,11 @@ async def _save(users):
         tmp = USERS_FILE + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(users, f, indent=2)
-        os.replace(tmp, USERS_FILE)
+        try:
+            os.replace(tmp, USERS_FILE)
+        except OSError:
+            import shutil
+            shutil.move(tmp, USERS_FILE)
 
 
 def get_users():

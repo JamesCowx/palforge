@@ -23,3 +23,7 @@ __main__.py
 .venv/
 venv/
 env/
+
+users.json
+
+servers.json
