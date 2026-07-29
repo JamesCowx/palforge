@@ -1,3 +1,26 @@
+(function(){
+    const c=document.getElementById('bg-canvas'),ctx=c.getContext('2d');
+    let w,h,particles=[];
+    function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight}
+    resize();window.addEventListener('resize',resize);
+    for(let i=0;i<80;i++)particles.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.8+.6});
+    function draw(){
+        ctx.clearRect(0,0,w,h);
+        for(let i=0;i<particles.length;i++){
+            const p=particles[i];p.x+=p.vx;p.y+=p.vy;
+            if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;
+            ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle='rgba(168,85,247,0.18)';ctx.fill();
+            for(let j=i+1;j<particles.length;j++){
+                const q=particles[j],dx=p.x-q.x,dy=p.y-q.y,dist=Math.sqrt(dx*dx+dy*dy);
+                if(dist<100){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=`rgba(59,130,246,${.03*(1-dist/100)})`;ctx.lineWidth=.6;ctx.stroke()}
+            }
+        }
+        requestAnimationFrame(draw)
+    }
+    draw()
+})();
+
 const API = {
     async get(path) {
         const r = await fetch(path, { credentials: 'same-origin' });
