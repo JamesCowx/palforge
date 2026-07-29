@@ -185,7 +185,21 @@ function animVal(id,nv){const el=document.getElementById(id);if(!el||el.textCont
 function fmtUptime(s){if(!s||s<=0)return'--';const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60);if(d)return d+'d '+h+'h';if(h)return h+'h '+m+'m';return m+'m'}
 
 // ─── settings ───
-async function loadPresets(){try{const p=await get('/api/servers/defaults/presets');$('#settings-preset').innerHTML='<option value="">Presets</option>'+Object.entries(p).map(([k,v])=>'<option value="'+k+'">'+v.label+'</option>').join('')}catch(e){}}
+async function loadPresets(){
+  try{
+    const p=await get('/api/servers/defaults/presets');
+    var sel=$('#settings-preset');
+    if(sel)sel.innerHTML='<option value="">Presets</option>'+Object.entries(p).map(([k,v])=>'<option value="'+k+'">'+v.label+'</option>').join('');
+    var grid=$('#preset-cards');
+    if(grid)grid.innerHTML=Object.entries(p).map(([k,v])=>{
+      var keyStats=[];
+      if(v.settings.ExpRate)keyStats.push((v.settings.ExpRate*100)+'% XP');
+      if(v.settings.PalCaptureRate)keyStats.push((v.settings.PalCaptureRate*100)+'% Capture');
+      if(v.settings.PalEggDefaultHatchingTime!==undefined)keyStats.push(v.settings.PalEggDefaultHatchingTime===0?'Instant Eggs':v.settings.PalEggDefaultHatchingTime+'h Eggs');
+      return '<div class="preset-card" data-preset="'+k+'" role="button" tabindex="0"><div class="preset-card-icon">'+v.icon+'</div><div class="preset-card-label">'+v.label+'</div><div class="preset-card-desc">'+v.description+'</div><div class="preset-card-stats">'+keyStats.join(' \u00B7 ')+'</div></div>';
+    }).join('')
+  }catch(e){}
+}
 const CATS={Server:['ServerName','ServerDescription','ServerPassword','AdminPassword','ServerPlayerMaxNum','PublicPort','PublicIP','Region','RCONEnabled','RCONPort','bUseAuth','BanListURL','CoopPlayerMaxNum','bIsMultiplay','bIsPvP','Difficulty'],World:['DayTimeSpeedRate','NightTimeSpeedRate'],Rates:['ExpRate','PalCaptureRate','PalSpawnNumRate','PalDamageRateAttack','PalDamageRateDefense','PlayerDamageRateAttack','PlayerDamageRateDefense','EnemyDropItemRate','CollectionDropRate','CollectionObjectHpRate','CollectionObjectRespawnSpeedRate','BuildObjectDamageRate','BuildObjectDeteriorationDamageRate','WorkSpeedRate'],Player:['PlayerStomachDecreaceRate','PlayerStaminaDecreaceRate','PlayerAutoHPRegeneRate','PlayerAutoHpRegeneRateInSleep','DeathPenalty','bEnablePlayerToPlayerDamage','bEnableFriendlyFire','bEnableNonLoginPenalty','bEnableFastTravel','bIsStartLocationSelectByMap','bExistPlayerAfterLogout','bEnableDefenseOtherGuildPlayer','DropItemMaxNum','DropItemMaxNum_UNKO'],Pal:['PalStomachDecreaceRate','PalStaminaDecreaceRate','PalAutoHPRegeneRate','PalAutoHpRegeneRateInSleep','PalEggDefaultHatchingTime'],Guild:['BaseCampMaxNum','BaseCampWorkerMaxNum','bAutoResetGuildNoOnlinePlayers','AutoResetGuildTimeNoOnlinePlayers','GuildPlayerMaxNum','bCanPickupOtherGuildDeathPenaltyDrop','DropItemAliveMaxHours'],Combat:['bEnableInvaderEnemy','bActiveUNKO','bEnableAimAssistPad','bEnableAimAssistKeyboard']};
 function getCat(k){for(const[c,ks]of Object.entries(CATS))if(ks.includes(k))return c;return'Other'}
 async function loadSettings(){
@@ -225,7 +239,7 @@ async function resetSettings(){
 }
 async function applyPreset(id){
   if(!id)return;
-  try{const presets=await get('/api/servers/defaults/presets'),p=presets[id];if(!p)return;const def=await get('/api/servers/defaults/settings');S.currentSettings={...def,...p.settings};renderSettings(S.currentSettings);toast('Applied "'+p.label+'"','info')}catch(e){}
+  try{const presets=await get('/api/servers/defaults/presets'),p=presets[id];if(!p)return;const def=await get('/api/servers/defaults/settings');S.currentSettings={...def,...p.settings};renderSettings(S.currentSettings);$$('.preset-card').forEach(c=>c.classList.remove('active'));var card=document.querySelector('.preset-card[data-preset="'+id+'"]');if(card)card.classList.add('active');toast('Applied "'+p.label+'"','info')}catch(e){}
   $('#settings-preset').value=''
 }
 
@@ -397,6 +411,8 @@ on('console-input','keydown',e=>{if(e.key==='Enter')sendCommand()});
 
 // delegated clicks
 document.addEventListener('click',e=>{
+  var card=e.target.closest('.preset-card');
+  if(card){applyPreset(card.dataset.preset);return}
   if(e.target.classList.contains('tab')){
     const n=e.target.dataset.tab;if(e.target.classList.contains('active'))return;
     $$('.tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');

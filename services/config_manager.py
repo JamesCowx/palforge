@@ -67,73 +67,91 @@ DEFAULT_PALWORLD_SETTINGS = {
 }
 
 SETTINGS_PRESETS = {
+    "beginner": {
+        "label": "Beginner",
+        "description": "Extra forgiving - great for first-time players",
+        "icon": "&#9730;",
+        "settings": {
+            "ExpRate": 3.0, "PalCaptureRate": 2.5, "PalSpawnNumRate": 1.2,
+            "PalDamageRateAttack": 0.5, "PalDamageRateDefense": 1.5,
+            "PlayerDamageRateAttack": 2.0, "PlayerDamageRateDefense": 0.5,
+            "PalEggDefaultHatchingTime": 2.0,
+            "DeathPenalty": "None", "bEnablePlayerToPlayerDamage": False,
+            "bEnableFriendlyFire": False, "ServerPlayerMaxNum": 8,
+            "DropItemMaxNum": 5000,
+        }
+    },
     "casual": {
         "label": "Casual",
-        "description": "Relaxed gameplay with easier settings",
-        "icon": "&#9786;",
+        "description": "Relaxed gameplay - easier combat and faster progress",
+        "icon": "&#9728;",
         "settings": {
             "ExpRate": 2.0, "PalCaptureRate": 2.0, "PalSpawnNumRate": 1.0,
             "PalDamageRateAttack": 0.8, "PalDamageRateDefense": 1.2,
             "PlayerDamageRateAttack": 1.3, "PlayerDamageRateDefense": 0.8,
             "PalEggDefaultHatchingTime": 36.0,
-            "DeathPenalty": "None",
-            "bEnablePlayerToPlayerDamage": False,
-            "bEnableFriendlyFire": False,
-            "ServerPlayerMaxNum": 8,
+            "DeathPenalty": "None", "bEnablePlayerToPlayerDamage": False,
+            "bEnableFriendlyFire": False, "ServerPlayerMaxNum": 8,
         }
     },
     "normal": {
         "label": "Normal",
-        "description": "Standard PalWorld experience",
-        "icon": "&#9924;",
+        "description": "Standard PalWorld experience as intended",
+        "icon": "&#9733;",
         "settings": {
             "ExpRate": 1.0, "PalCaptureRate": 1.0, "PalSpawnNumRate": 1.0,
             "PalDamageRateAttack": 1.0, "PalDamageRateDefense": 1.0,
             "PlayerDamageRateAttack": 1.0, "PlayerDamageRateDefense": 1.0,
             "PalEggDefaultHatchingTime": 72.0,
-            "DeathPenalty": "All",
-            "bEnablePlayerToPlayerDamage": False,
-            "bEnableFriendlyFire": False,
-            "ServerPlayerMaxNum": 32,
+            "DeathPenalty": "All", "bEnablePlayerToPlayerDamage": False,
+            "bEnableFriendlyFire": False, "ServerPlayerMaxNum": 32,
         }
     },
-    "hardcore": {
-        "label": "Hardcore",
-        "description": "Brutal difficulty with scarce resources",
+    "hard": {
+        "label": "Hard",
+        "description": "Increased difficulty - tougher enemies, scarce resources",
         "icon": "&#9760;",
         "settings": {
             "ExpRate": 0.5, "PalCaptureRate": 0.6, "PalSpawnNumRate": 0.8,
             "PalDamageRateAttack": 1.5, "PalDamageRateDefense": 0.7,
             "PlayerDamageRateAttack": 0.7, "PlayerDamageRateDefense": 1.4,
             "PalEggDefaultHatchingTime": 144.0,
-            "DeathPenalty": "All",
-            "bEnablePlayerToPlayerDamage": True,
-            "bEnableFriendlyFire": True,
-            "ServerPlayerMaxNum": 16,
-            "DropItemMaxNum": 1000,
-            "BuildObjectDeteriorationDamageRate": 2.0,
+            "DeathPenalty": "All", "bEnablePlayerToPlayerDamage": True,
+            "bEnableFriendlyFire": True, "ServerPlayerMaxNum": 16,
+            "DropItemMaxNum": 1000, "BuildObjectDeteriorationDamageRate": 2.0,
         }
     },
     "creative": {
         "label": "Creative",
-        "description": "Fast progression with no restrictions",
+        "description": "Unlimited resources, instant progress, no restrictions",
         "icon": "&#9997;",
         "settings": {
             "ExpRate": 5.0, "PalCaptureRate": 3.0, "PalSpawnNumRate": 2.0,
             "PalDamageRateAttack": 0.3, "PalDamageRateDefense": 2.0,
             "PlayerDamageRateAttack": 3.0, "PlayerDamageRateDefense": 0.3,
             "PalEggDefaultHatchingTime": 0.0,
-            "DeathPenalty": "None",
-            "bEnablePlayerToPlayerDamage": False,
-            "bEnableFriendlyFire": False,
-            "ServerPlayerMaxNum": 8,
-            "WorkSpeedRate": 5.0,
-            "BaseCampWorkerMaxNum": 30,
-            "GuildPlayerMaxNum": 50,
-            "DropItemMaxNum": 10000,
+            "DeathPenalty": "None", "bEnablePlayerToPlayerDamage": False,
+            "bEnableFriendlyFire": False, "ServerPlayerMaxNum": 8,
+            "WorkSpeedRate": 5.0, "BaseCampWorkerMaxNum": 30,
+            "GuildPlayerMaxNum": 50, "DropItemMaxNum": 10000,
             "bEnableFastTravel": True,
         }
-    }
+    },
+    "speedrun": {
+        "label": "Speed Run",
+        "description": "Fast XP, instant eggs, max spawns - race to endgame",
+        "icon": "&#9889;",
+        "settings": {
+            "ExpRate": 4.0, "PalCaptureRate": 2.0, "PalSpawnNumRate": 2.5,
+            "PalDamageRateAttack": 0.7, "PalDamageRateDefense": 1.3,
+            "PlayerDamageRateAttack": 1.5, "PlayerDamageRateDefense": 0.7,
+            "PalEggDefaultHatchingTime": 0.0,
+            "DeathPenalty": "Item", "bEnablePlayerToPlayerDamage": False,
+            "bEnableFriendlyFire": False, "ServerPlayerMaxNum": 8,
+            "WorkSpeedRate": 3.0, "DayTimeSpeedRate": 1.5, "NightTimeSpeedRate": 3.0,
+            "bEnableFastTravel": True,
+        }
+    },
 }
 
 

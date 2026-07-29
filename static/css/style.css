@@ -207,6 +207,17 @@ canvas#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5
 .conn-addr{flex:1;font-family:var(--font-mono);font-size:11.5px;background:rgba(0,0,0,.35);padding:7px 12px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--border)}
 .conn-hint{font-size:10.5px;color:var(--text-muted);line-height:1.5}
 
+.settings-presets-section{margin-bottom:28px}
+.settings-presets-section h4{font-size:12px;font-weight:700;color:var(--text-secondary);margin-bottom:14px;letter-spacing:-.01em}
+.preset-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.preset-card{padding:18px 20px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .25s var(--ease);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.preset-card:hover{border-color:var(--border-hover);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.preset-card:active{transform:scale(.97)}
+.preset-card.active{border-color:var(--violet);background:rgba(139,92,246,.06);box-shadow:0 0 0 1px rgba(139,92,246,.15)}
+.preset-card-icon{font-size:24px;margin-bottom:8px}
+.preset-card-label{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.preset-card-desc{font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.4}
+.preset-card-stats{font-size:10px;color:var(--violet);font-weight:600;font-family:var(--font-mono)}
 .settings-toolbar{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
 .settings-search{flex:1;min-width:190px;max-width:340px;padding:10px 14px;background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12.5px;font-family:var(--font);transition:all .25s}
 .settings-search:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(59,130,246,.05)}
