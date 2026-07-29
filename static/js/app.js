@@ -108,8 +108,12 @@ async function initApp(){
 async function poll(){updateSystemInfo();updateConnectionInfo();if(S.view==='servers')await loadServers()}
 
 // ─── servers ───
+let _loading=false;
 async function loadServers(){
-  try{S.servers=await get('/api/servers')}catch(e){return}
+  if(_loading)return;
+  _loading=true;
+  try{S.servers=await get('/api/servers')}catch(e){_loading=false;return}
+  _loading=false;
   if(S.view==='servers')renderServerList();
   if(S.activeId){
     const s=S.servers.find(x=>x.id===S.activeId);
@@ -133,12 +137,14 @@ function selectServer(id){
   if(s.status==='running')startUptimeTick(s)
 }
 function showEmptyState(){
-  $('#empty-state').style.display='flex';$('#server-view').style.display='none';
+  document.getElementById('empty-state').classList.remove('hidden');
+  $('#server-view').classList.remove('visible');
   if(S.consoleWs){S.consoleWs.close();S.consoleWs=null}
   if(S.uptimeTick)clearInterval(S.uptimeTick)
 }
 function showServerView(s){
-  $('#empty-state').style.display='none';$('#server-view').style.display='flex';
+  document.getElementById('empty-state').classList.add('hidden');
+  $('#server-view').classList.add('visible');
   refreshServerView(s)
 }
 function refreshServerView(s){

@@ -156,7 +156,9 @@ canvas#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.6
 .empty-card h2{font-size:24px;font-weight:800;margin-bottom:10px}
 .empty-card p{font-size:14px;color:var(--text-muted);line-height:1.7;margin-bottom:30px}
 
-#server-view{display:flex;flex-direction:column;height:100%;animation:fadeIn .3s var(--ease)}
+#server-view{display:none;flex-direction:column;height:100%}
+#server-view.visible{display:flex;animation:fadeIn .25s var(--ease)}
+#empty-state.hidden{display:none}
 #server-header{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:rgba(8,11,24,.88);border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 .server-title-area{display:flex;align-items:center;gap:12px}
 .server-avatar{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--violet));box-shadow:0 3px 16px var(--violet-glow);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800}
