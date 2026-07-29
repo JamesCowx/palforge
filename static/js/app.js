@@ -71,11 +71,11 @@ async function updateConnectionInfo(){if(!state.activeServerId)return;try{const 
 
 async function loadUsersList(){try{const users=await API.get('/api/users');const el=$('#users-list-section');if(!el)return;el.innerHTML=users.map(u=>`<div class="user-list-item"><div class="user-list-name">${E(u.username)}</div><div style="display:flex;align-items:center;gap:6px"><span class="user-list-role ${u.role}">${u.role}</span><div class="user-list-actions"><button class="btn btn-outline btn-sm" data-edit="${E(u.username)}">Edit</button>${u.role!=='admin'?`<button class="btn btn-outline-danger btn-sm" data-delete="${E(u.username)}">Del</button>`:''}</div></div></div>`).join('')}catch(e){if(e.message!=='unauth')toast('Failed to load users','error')}}
 
-function showModal(title,bodyHtml,onConfirm,confirmText='Confirm',confirmClass='btn-primary'){const overlay=$('#modal-overlay');overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','modal-title');$('#modal-title').textContent=title;$('#modal-body').innerHTML=bodyHtml;overlay.style.display='flex';$('#modal-confirm').className=`btn ${confirmClass}`;$('#modal-confirm').textContent=confirmText;$('#modal-confirm').onclick=async()=>{$('#modal-confirm').disabled=true;try{await onConfirm()}catch(e){};$('#modal-confirm').disabled=false;overlay.style.display='none'};$('#modal-cancel').onclick=()=>{overlay.style.display='none'};overlay.onclick=e=>{if(e.target===overlay)overlay.style.display='none'};document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){overlay.style.display='none';document.removeEventListener('keydown',esc)}});setTimeout(()=>{const inp=document.querySelector('#modal-name, #modal-rename-input');if(inp)inp.focus()},120)}
+function showModal(title,bodyHtml,onConfirm,confirmText='Confirm',confirmClass='btn-primary'){const overlay=$('#modal-overlay');if(!overlay)return;overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-labelledby','modal-title');$('#modal-title').textContent=title;$('#modal-body').innerHTML=bodyHtml;overlay.style.display='flex';const cfm=$('#modal-confirm');if(cfm){cfm.className='btn '+confirmClass;cfm.textContent=confirmText;cfm.onclick=async()=>{cfm.disabled=true;try{await onConfirm()}catch(e){toast('Error: '+(e.message||'Something went wrong'),'error')}cfm.disabled=false;overlay.style.display='none'}}const cancel=$('#modal-cancel');if(cancel)cancel.onclick=()=>{overlay.style.display='none'};overlay.onclick=e=>{if(e.target===overlay)overlay.style.display='none'};document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){overlay.style.display='none';document.removeEventListener('keydown',esc)}});setTimeout(()=>{const inp=document.querySelector('#modal-name, #modal-rename-input, input');if(inp)inp.focus()},120)}
 
-async function showNewServerModal(){showModal('Create Server',`<div class="modal-body-field"><label for="modal-name">Name</label><input type="text" id="modal-name" placeholder="My Server"></div><div class="modal-body-field"><label for="modal-port">Port</label><input type="number" id="modal-port" value="8211" min="1024" max="65535"></div><div class="modal-body-field"><label for="modal-players">Max Players</label><input type="number" id="modal-players" value="32" min="1"></div>`,async()=>{const name=document.getElementById('modal-name').value.trim()||'Unnamed',port=parseInt(document.getElementById('modal-port').value,10),players=parseInt(document.getElementById('modal-players').value,10);if(isNaN(port)||port<1024||port>65535){toast('Port 1024-65535','error');return}if(isNaN(players)||players<1){toast('Players >= 1','error');return}const s=await API.post('/api/servers',{name,port});if(!s?.id){toast('Failed','error');return}await API.put(`/api/servers/${s.id}/settings`,{settings:{ServerPlayerMaxNum:players,ServerName:name,PublicPort:port}});await loadServers();selectServer(s.id);toast('Created','success')},'Create Server')}
-async function showRenameModal(){const s=state.servers.find(x=>x.id===state.activeServerId);if(!s)return;showModal('Rename',`<div class="modal-body-field"><label for="modal-rename-input">Name</label><input type="text" id="modal-rename-input" value="${E(s.name)}"></div>`,async()=>{const name=document.getElementById('modal-rename-input').value.trim();if(!name)return toast('Required','error');await API.put(`/api/servers/${state.activeServerId}/rename`,{name});await loadServers();toast('Renamed','success')},'Rename')}
-async function deleteServer(){const s=state.servers.find(x=>x.id===state.activeServerId);if(!s)return;showModal('Delete',`<p>Delete <strong>${E(s.name)}</strong>?</p><p style="margin-top:8px;color:var(--rose);font-size:11px">Files remain on disk.</p>`,async()=>{await API.del(`/api/servers/${state.activeServerId}`);state.activeServerId=null;await loadServers();showEmptyState();toast('Deleted','info')},'Delete','btn-danger')}
+async function showNewServerModal(){showModal('Create Server','<div class="modal-body-field"><label for="modal-name">Name</label><input type="text" id="modal-name" placeholder="My Server"></div><div class="modal-body-field"><label for="modal-port">Port</label><input type="number" id="modal-port" value="8211" min="1024" max="65535"></div><div class="modal-body-field"><label for="modal-players">Max Players</label><input type="number" id="modal-players" value="32" min="1"></div>',async()=>{const name=document.getElementById('modal-name')?.value?.trim()||'Unnamed',port=parseInt(document.getElementById('modal-port')?.value,10),players=parseInt(document.getElementById('modal-players')?.value,10);if(isNaN(port)||port<1024||port>65535){toast('Port must be 1024-65535','error');return}if(isNaN(players)||players<1){toast('Players must be >= 1','error');return}try{const s=await API.post('/api/servers',{name,port});if(!s?.id){toast('Failed to create','error');return}await API.put('/api/servers/'+s.id+'/settings',{settings:{ServerPlayerMaxNum:players,ServerName:name,PublicPort:port}});await loadServers();selectServer(s.id);toast('Created','success')}catch(e){toast('Failed: '+(e.message||'Unknown error'),'error')}},'Create Server')}
+async function showRenameModal(){const s=state.servers.find(x=>x.id===state.activeServerId);if(!s)return;showModal('Rename','<div class="modal-body-field"><label for="modal-rename-input">Name</label><input type="text" id="modal-rename-input" value="'+E(s.name)+'"></div>',async()=>{const name=document.getElementById('modal-rename-input')?.value?.trim();if(!name)return toast('Required','error');try{await API.put('/api/servers/'+state.activeServerId+'/rename',{name});await loadServers();toast('Renamed','success')}catch(e){toast('Failed','error')}},'Rename')}
+async function deleteServer(){const s=state.servers.find(x=>x.id===state.activeServerId);if(!s)return;showModal('Delete','<p>Delete <strong>'+E(s.name)+'</strong>?</p><p style="margin-top:8px;color:var(--rose);font-size:11px">Files remain on disk.</p>',async()=>{try{await API.del('/api/servers/'+state.activeServerId);state.activeServerId=null;await loadServers();showEmptyState();toast('Deleted','info')}catch(e){toast('Failed','error')}},'Delete','btn-danger')}
 
 async function showAddUserModal(){showModal('Add User',`<div class="modal-body-field"><label for="modal-uname">Username</label><input type="text" id="modal-uname"></div><div class="modal-body-field"><label for="modal-upass">Password</label><input type="password" id="modal-upass"></div><div class="modal-body-field"><label for="modal-urole">Role</label><select id="modal-urole" style="width:100%;padding:11px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:13px"><option value="user">User</option><option value="admin">Admin</option></select></div>`,async()=>{const u=document.getElementById('modal-uname').value.trim(),p=document.getElementById('modal-upass').value,r=document.getElementById('modal-urole').value;if(!u||!p){toast('Fill all fields','error');return}try{await API.post('/api/users',{username:u,password:p,role:r});await loadUsersList();toast('User added','success')}catch(e){toast('Failed: '+e.message,'error')}},'Add')}
 async function showEditUserModal(username){showModal(`Edit ${username}`,`<div class="modal-body-field"><label>New Password (leave blank to keep)</label><input type="password" id="modal-upass"></div><div class="modal-body-field"><label>Role</label><select id="modal-urole" style="width:100%;padding:11px 14px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:var(--font);font-size:13px"><option value="user">User</option><option value="admin">Admin</option></select></div>`,async()=>{const p=document.getElementById('modal-upass').value,r=document.getElementById('modal-urole').value,body={};if(p)body.password=p;if(r)body.role=r;try{await API.put(`/api/users/${username}`,body);await loadUsersList();toast('Updated','success')}catch(e){toast('Failed','error')}},'Save')}
@@ -83,36 +83,50 @@ async function deleteUserModal(username){showModal('Delete',`<p>Delete user <str
 
 function E(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
-document.getElementById('btn-goto-login').addEventListener('click',()=>showPage('login'));
-document.getElementById('btn-login').addEventListener('click',doLogin);
-document.getElementById('btn-back-landing').addEventListener('click',()=>showPage('landing'));
-document.getElementById('btn-logout').addEventListener('click',doLogout);
-document.getElementById('btn-new-user').addEventListener('click',showAddUserModal);
+function safeOn(el, event, fn) { if (el) el.addEventListener(event, fn); }
 
-document.addEventListener('input',e=>{if(e.target.id==='sidebar-search'){if(state.currentView==='servers')renderServerList()}if(e.target.id==='settings-search'){clearTimeout(ssd);ssd=setTimeout(()=>renderSettings(state.currentSettings,e.target.value),150)}});
-document.addEventListener('change',e=>{if(e.target.id==='settings-preset')applyPreset(e.target.value)});
-document.addEventListener('click',e=>{
-    const btn=e.target.closest('button');
-    if(btn&&btn.classList.contains('conn-copy')){const el=document.getElementById(btn.dataset.target);if(el)navigator.clipboard.writeText(el.textContent).then(()=>toast('Copied','success'))}
-    if(btn&&btn.dataset.edit){showEditUserModal(btn.dataset.edit)}
-    if(btn&&btn.dataset.delete){deleteUserModal(btn.dataset.delete)}
-    if(e.target.classList.contains('tab')){const name=e.target.dataset.tab;if(e.target.classList.contains('active'))return;$$('.tab').forEach(t=>t.classList.remove('active'));e.target.classList.add('active');$$('.tab-pane').forEach(p=>p.classList.remove('active'));const pane=document.getElementById(`tab-${name}`);if(pane)pane.classList.add('active');if(name==='settings')loadSettings();if(name==='console')connectConsole(state.activeServerId);if(name==='install')checkSteamcmdStatus()}
-    if(e.target.classList.contains('sidenav-item')){const view=e.target.dataset.view;$$('.sidenav-item').forEach(s=>s.classList.remove('active'));e.target.classList.add('active');$('#view-servers').style.display=view==='servers'?'':'none';$('#view-users').style.display=view==='users'?'':'none';state.currentView=view;if(view==='servers'){renderServerList();if(state.activeServerId)renderServerView(state.servers.find(x=>x.id===state.activeServerId));else showEmptyState()}if(view==='users')loadUsersList()}
+safeOn(document.getElementById('btn-goto-login'), 'click', () => showPage('login'));
+safeOn(document.getElementById('btn-login'), 'click', doLogin);
+safeOn(document.getElementById('btn-back-landing'), 'click', () => showPage('landing'));
+safeOn(document.getElementById('btn-logout'), 'click', doLogout);
+safeOn(document.getElementById('btn-new-user'), 'click', showAddUserModal);
+safeOn($('#btn-new-server'), 'click', showNewServerModal);
+safeOn($('#btn-empty-create'), 'click', showNewServerModal);
+safeOn($('#btn-rename'), 'click', showRenameModal);
+safeOn($('#btn-delete'), 'click', deleteServer);
+safeOn($('#btn-save-settings'), 'click', saveSettings);
+safeOn($('#btn-reset-settings'), 'click', resetSettings);
+safeOn($('#btn-send-command'), 'click', sendCommand);
+safeOn($('#btn-clear-console'), 'click', () => { $('#console-output').innerHTML = ''; });
+safeOn($('#btn-install-steamcmd'), 'click', installSteamcmd);
+safeOn($('#btn-install-server'), 'click', installServer);
+safeOn($('#console-input'), 'keydown', e => { if (e.key === 'Enter') sendCommand(); });
+
+document.addEventListener('input', e => {
+    if (e.target.id === 'sidebar-search') { if (state.currentView === 'servers') renderServerList(); }
+    if (e.target.id === 'settings-search') { clearTimeout(ssd); ssd = setTimeout(() => renderSettings(state.currentSettings, e.target.value), 150); }
 });
-$('#server-list').addEventListener('click',e=>{const li=e.target.closest('li[data-id]');if(li)selectServer(li.dataset.id)});
-$('#btn-new-server').addEventListener('click',showNewServerModal);
-$('#btn-empty-create').addEventListener('click',showNewServerModal);
-$('#btn-rename').addEventListener('click',showRenameModal);
-$('#btn-delete').addEventListener('click',deleteServer);
-$('#btn-save-settings').addEventListener('click',saveSettings);
-$('#btn-reset-settings').addEventListener('click',resetSettings);
-$('#btn-send-command').addEventListener('click',sendCommand);
-$('#btn-clear-console').addEventListener('click',()=>{$('#console-output').innerHTML=''});
-$('#btn-install-steamcmd').addEventListener('click',installSteamcmd);
-$('#btn-install-server').addEventListener('click',installServer);
-$('#console-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendCommand()});
+document.addEventListener('change', e => { if (e.target.id === 'settings-preset') applyPreset(e.target.value); });
+document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (btn) {
+        if (btn.classList.contains('conn-copy')) { const el = document.getElementById(btn.dataset.target); if (el) navigator.clipboard.writeText(el.textContent).then(() => toast('Copied', 'success')); }
+        if (btn.dataset.edit) showEditUserModal(btn.dataset.edit);
+        if (btn.dataset.delete) deleteUserModal(btn.dataset.delete);
+    }
+    if (e.target.classList.contains('tab')) { const n = e.target.dataset.tab; if (e.target.classList.contains('active')) return; $$('.tab').forEach(t => t.classList.remove('active')); e.target.classList.add('active'); $$('.tab-pane').forEach(p => p.classList.remove('active')); const pane = document.getElementById('tab-' + n); if (pane) pane.classList.add('active'); if (n === 'settings') loadSettings(); if (n === 'console') connectConsole(state.activeServerId); if (n === 'install') checkSteamcmdStatus(); }
+    if (e.target.classList.contains('sidenav-item')) {
+        const view = e.target.dataset.view; $$('.sidenav-item').forEach(s => s.classList.remove('active')); e.target.classList.add('active');
+        $('#view-servers').style.display = view === 'servers' ? '' : 'none';
+        $('#view-users').style.display = view === 'users' ? '' : 'none';
+        state.currentView = view;
+        if (view === 'servers') { renderServerList(); const sv = state.servers.find(x => x.id === state.activeServerId); if (sv) renderServerView(sv); else showEmptyState(); }
+        if (view === 'users') loadUsersList();
+    }
+});
+$('#server-list').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) selectServer(li.dataset.id); });
 
-['#btn-start','#btn-stop','#btn-restart'].forEach((s,i)=>{const acts=[()=>API.post(`/api/servers/${state.activeServerId}/start`),()=>API.post(`/api/servers/${state.activeServerId}/stop`),()=>API.post(`/api/servers/${state.activeServerId}/restart`)],labels=['Start','Stop','Restart'];$(s).addEventListener('click',async()=>{const btn=$(s),orig=btn.textContent;btn.innerHTML='<span class="btn-working">&#9679;</span> Working...';btn.disabled=true;try{await acts[i]();toast(labels[i]+'ing...','success')}catch(e){};await loadServers();if(state.activeServerId){const sv=state.servers.find(x=>x.id===state.activeServerId);if(sv){renderServerView(sv);if(sv.status==='running'){startUptimeTick(sv);connectConsole(state.activeServerId)}}}btn.disabled=false;btn.textContent=orig})});
+['#btn-start','#btn-stop','#btn-restart'].forEach((s,i)=>{const acts=[()=>API.post('/api/servers/'+(state.activeServerId||'')+'/start'),()=>API.post('/api/servers/'+(state.activeServerId||'')+'/stop'),()=>API.post('/api/servers/'+(state.activeServerId||'')+'/restart')];const btn=$(s);if(!btn)return;btn.addEventListener('click',async()=>{const orig=btn.textContent;btn.innerHTML='<span class="btn-working">&#9679;</span> Working...';btn.disabled=true;try{await acts[i]();toast(i===0?'Starting...':i===1?'Stopped':'Restarting...','success')}catch(e){toast('Failed','error')};await loadServers();if(state.activeServerId){const sv=state.servers.find(x=>x.id===state.activeServerId);if(sv){renderServerView(sv);if(sv.status==='running'){startUptimeTick(sv);connectConsole(state.activeServerId)}}}btn.disabled=false;btn.textContent=orig})});
 
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.id==='login-username'||e.target.id==='login-password'))doLogin();if(e.ctrlKey||e.metaKey)return;if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;if(e.key==='n'||e.key==='N'){e.preventDefault();showNewServerModal()}if(e.key==='F2'&&state.activeServerId){e.preventDefault();showRenameModal()}if(e.key==='Escape'){const o=$('#modal-overlay');if(o.style.display!=='none')o.style.display='none'}});
 
