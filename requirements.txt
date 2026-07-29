@@ -4,3 +4,4 @@ websockets==14.1
 aiofiles==24.1.0
 python-multipart==0.0.19
 python-dotenv==1.0.1
+psutil==7.0.0

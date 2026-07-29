@@ -120,8 +120,7 @@ canvas#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3
 .sidenav-item.active{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.12);color:var(--blue)}
 .sidenav-icon{font-size:12px}
 #server-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px}
-#server-list li{padding:10px 13px;margin:2px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius-sm);transition:all .2s var(--ease);border:1px solid transparent;font-size:12px;animation:fadeUp .35s var(--ease) both}
-#server-list li:nth-child(1){animation-delay:.02s}#server-list li:nth-child(2){animation-delay:.04s}#server-list li:nth-child(3){animation-delay:.06s}#server-list li:nth-child(4){animation-delay:.08s}#server-list li:nth-child(5){animation-delay:.10s}#server-list li:nth-child(6){animation-delay:.12s}#server-list li:nth-child(7){animation-delay:.14s}#server-list li:nth-child(8){animation-delay:.16s}
+#server-list li{padding:10px 13px;margin:2px 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-radius:var(--radius-sm);transition:all .2s var(--ease);border:1px solid transparent;font-size:12px}
 #server-list li:hover{background:var(--bg-card-hover);border-color:var(--border);transform:translateX(2px)}
 #server-list li.active{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.12)}
 #server-list li.active::before{content:'';position:absolute;left:-4px;top:7px;bottom:7px;width:4px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,var(--blue),var(--violet));box-shadow:0 0 10px rgba(59,130,246,.3)}

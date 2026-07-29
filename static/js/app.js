@@ -170,10 +170,11 @@ function refreshServerView(s){
 function startUptimeTick(s){
   if(S.uptimeTick)clearInterval(S.uptimeTick);
   if(s.status!=='running')return;
+  const startedAt=Date.now();
   S.uptimeTick=setInterval(()=>{
     const sv=S.servers.find(x=>x.id===S.activeId);
     if(!sv||sv.status!=='running'){clearInterval(S.uptimeTick);return}
-    animVal('ov-uptime',fmtUptime(sv.uptime_seconds));
+    animVal('ov-uptime',fmtUptime(Math.floor((Date.now()-startedAt)/1000)));
     animVal('ov-players',(sv.player_count||0)+' / '+(sv.settings?.ServerPlayerMaxNum||32));
     if(sv.memory_mb>0)animVal('ov-memory',sv.memory_mb.toFixed(0)+' MB')
   },1000)
