@@ -206,6 +206,7 @@ class ServerManager:
                     server.executable_path,
                     "-port", str(server.port),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
+                    "-publiclobby",
                     "-log",
                     **subprocess_kwargs,
                 )
@@ -215,6 +216,7 @@ class ServerManager:
                     server.executable_path,
                     "-port", str(server.port),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
+                    "-publiclobby",
                     "-log",
                     **subprocess_kwargs,
                 )

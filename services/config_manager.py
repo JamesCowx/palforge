@@ -64,6 +64,7 @@ DEFAULT_PALWORLD_SETTINGS = {
     "bExistPlayerAfterLogout": False,
     "bEnableDefenseOtherGuildPlayer": False,
     "CoopPlayerMaxNum": 4,
+    "bEnableXboxCrossplay": True,
 }
 
 SETTINGS_PRESETS = {
