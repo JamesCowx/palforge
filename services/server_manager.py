@@ -205,6 +205,7 @@ class ServerManager:
                 server.process = await asyncio.create_subprocess_exec(
                     server.executable_path,
                     "-port", str(server.port),
+                    "-queryport", str(server.port + 1),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
                     "-publiclobby",
                     "-log",
@@ -215,6 +216,7 @@ class ServerManager:
                 server.process = await asyncio.create_subprocess_exec(
                     server.executable_path,
                     "-port", str(server.port),
+                    "-queryport", str(server.port + 1),
                     "-players", str(server.settings.get("ServerPlayerMaxNum", 32)),
                     "-publiclobby",
                     "-log",
