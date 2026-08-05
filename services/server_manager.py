@@ -28,6 +28,7 @@ class ServerInstance:
     player_count: int = 0
     max_players_seen: int = 0
     connected_players: List[str] = field(default_factory=list)
+    game_version: str = ""
     process: Any = None
     log_lines: List[str] = field(default_factory=list)
     log_callback: Optional[Callable] = None
@@ -81,6 +82,7 @@ class ServerInstance:
             "player_count": self.player_count,
             "max_players_seen": self.max_players_seen,
             "memory_mb": round(self.memory_mb, 1),
+            "game_version": self.game_version,
         }
 
 
@@ -302,6 +304,7 @@ class ServerManager:
     _PLAYER_COUNT_RE = re.compile(r"NumPlayer[^:]*:\s*(\d+)", re.IGNORECASE)
     _SHOWPLAYERS_HEADER_RE = re.compile(r"name,playeruid,steamid", re.IGNORECASE)
     _PLAYER_ENTRY_RE = re.compile(r"^([^,]+),(\d+),(\d{17})")
+    _GAME_VERSION_RE = re.compile(r"Game version is v?([\d.]+)")
 
     async def _read_output(self, server: ServerInstance):
         if not server.process or not server.process.stdout:
@@ -349,6 +352,10 @@ class ServerManager:
 
             if server.log_callback:
                 await server.log_callback(server.id, text)
+
+            m = self._GAME_VERSION_RE.search(text)
+            if m:
+                server.game_version = m.group(1)
 
         if server.process.returncode is not None and server.status == "running":
             server.status = "stopped"

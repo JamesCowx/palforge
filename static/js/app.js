@@ -166,6 +166,7 @@ function refreshServerView(s){
   $('#ov-players').textContent=(s.player_count||0)+' / '+(s.settings?.ServerPlayerMaxNum||32);
   $('#ov-memory').textContent=(s.memory_mb||0)>0?s.memory_mb.toFixed(0)+' MB':'--';
   $('#info-id').textContent=s.id;$('#info-port').textContent=s.port;
+  $('#info-version').textContent=s.game_version||'--';
   $('#info-maxplayers').textContent=s.settings?.ServerPlayerMaxNum||32;
   $('#info-path').textContent=s.install_dir
 }
